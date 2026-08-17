@@ -1,0 +1,107 @@
+(*
+  ==========================================================================
+   Huang et al. HECC-based AKA for UAV-enabled SAR Networks
+   MECHANISED CRYPTANALYSIS -- companion to "Analysis-3-revised.tex"
+   FILE 1/9 : CORRECTNESS FAILURE            (Theorem 1, Sec. "correctness")
+   Tool     : ProVerif 2.04 (Kali Linux x64)
+  ==========================================================================
+
+   CLAIM MECHANISED
+     Psi_2 transmits only the aggregate  ring_v = (w_v + w*_v).D ;
+     the value  Omega_v = w_v.D  is NEVER sent, and w*_v appears nowhere.
+     Hence DRN_u cannot evaluate  lambda_uv = w_u . Omega_v , its derived key
+     differs from v's, the key-confirmation check VK fails, and the initiator
+     can never accept.  The protocol is therefore NOT EXECUTABLE.
+
+   HOW THE CLAIM IS TESTED
+     We model exactly the published messages.  DRN_u computes lambda with the
+     only peer commitment it possesses (ring_v).  DRN_v computes lambda with
+     Omega_u, which Psi_1 does carry.  DRN_u emits evU_accept ONLY if the
+     received VK matches its own recomputation.  We then ask whether that
+     event is reachable at all.
+
+   EXPECTED RESULT
+     RESULT not event(evU_accept(IDu)) is true
+       => the event is UNREACHABLE => correctness FAILS  (Theorem 1 confirmed).
+     Compare with File 2, where adding Omega_v to Psi_2 makes it reachable.
+*)
+
+(*** 1. TYPES AND ALGEBRA ***)
+type h_scalar.
+type h_elem.
+
+const h_g: h_elem.
+fun hexp(h_elem, h_scalar): h_elem.
+equation forall x: h_scalar, y: h_scalar;
+    hexp(hexp(h_g, x), y) = hexp(hexp(h_g, y), x).
+
+fun sadd(h_scalar, h_scalar): h_scalar.   (* scalar addition, free symbol *)
+fun hh(bitstring): bitstring.             (* one-way hash                 *)
+
+fun e2b(h_elem):   bitstring [typeConverter].
+fun s2b(h_scalar): bitstring [typeConverter].
+
+(*** 2. CHANNELS ***)
+free h_ch: channel.                 (* public, attacker-controlled          *)
+free c_u2v: channel [private].   (* initiator -> responder  *)
+free c_v2u: channel [private].   (* responder -> initiator  *)
+
+(*** 3. IDENTITIES ***)
+free IDu: bitstring.
+free IDv: bitstring.
+
+(*** 4. EVENTS AND QUERY ***)
+event evU_accept(bitstring).        (* initiator completed Phase 3          *)
+event evV_ready(bitstring).         (* responder finished Phase 2           *)
+
+query event(evU_accept(IDu)).       (* reachable at all ?                   *)
+query event(evV_ready(IDv)).        (* sanity: responder side does complete *)
+
+(*** 5. INITIATOR (Phases 1 and 3, exactly as published) ***)
+let DRN_u(alpha_u: h_scalar, Cr_u: h_scalar, Cr_v: h_scalar, A_v: h_elem) =
+    new omega_u:  h_scalar;
+    new omega_su: h_scalar;
+    new Nu: bitstring;
+    let Om_u   = hexp(h_g, omega_u) in
+    let ring_u = hexp(h_g, sadd(omega_u, omega_su)) in
+    (* Psi_1 carries BOTH Omega_u and ring_u *)
+    out(c_u2v, (Om_u, ring_u, Nu));
+    out(h_ch, (e2b(Om_u), e2b(ring_u), Nu));
+    (* Psi_2 carries ONLY ring_v -- this is the defect under test *)
+    in(c_v2u, (ring_v: h_elem, Nv: bitstring));
+    let lambda_u = hexp(ring_v, omega_u) in
+    let mu_u     = hexp(A_v, alpha_u) in
+    let SK_u = hh((s2b(Cr_u), Nu, e2b(lambda_u), e2b(mu_u), Nv, s2b(Cr_v))) in
+    in(h_ch, mVK: bitstring);
+    if mVK = hh((Nu, Nv, SK_u)) then
+    event evU_accept(IDu).
+
+(*** 6. RESPONDER (Phase 2) ***)
+let DRN_v(alpha_v: h_scalar, Cr_v: h_scalar, Cr_u: h_scalar, A_u: h_elem) =
+    in(c_u2v, (Om_u: h_elem, ring_u: h_elem, Nu: bitstring));
+    new omega_v:  h_scalar;
+    new omega_sv: h_scalar;
+    new Nv: bitstring;
+    let ring_v   = hexp(h_g, sadd(omega_v, omega_sv)) in
+    let lambda_v = hexp(Om_u, omega_v) in
+    let mu_v     = hexp(A_u, alpha_v) in
+    let SK_v = hh((s2b(Cr_u), Nu, e2b(lambda_v), e2b(mu_v), Nv, s2b(Cr_v))) in
+    event evV_ready(IDv);
+    out(c_v2u, (ring_v, Nv));
+    out(h_ch, (e2b(ring_v), Nv));
+    out(h_ch, hh((Nu, Nv, SK_v))).
+
+(*** 7. MAIN ***)
+process
+    new alpha_u: h_scalar;
+    new alpha_v: h_scalar;
+    new dCA: h_scalar;
+    new f_u: h_scalar;
+    new f_v: h_scalar;
+    let Cr_u = sadd(dCA, f_u) in
+    let Cr_v = sadd(dCA, f_v) in
+    let A_u  = hexp(h_g, alpha_u) in
+    let A_v  = hexp(h_g, alpha_v) in
+    out(h_ch, (e2b(A_u), e2b(A_v)));            (* static keys are public *)
+    (   ( ! DRN_u(alpha_u, Cr_u, Cr_v, A_v) )
+      | ( ! DRN_v(alpha_v, Cr_v, Cr_u, A_u) )   )

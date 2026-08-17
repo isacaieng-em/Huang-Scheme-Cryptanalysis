@@ -1,0 +1,105 @@
+(*
+  ==========================================================================
+   FILE 7/9 : FORGERY CONTROL -- the root cause isolated   (Remark to Thm 2)
+   Tool     : ProVerif 2.04 (Kali Linux x64)
+  ==========================================================================
+
+   WHY THIS CONTROL HAS THIS PARTICULAR SHAPE
+     A natural first guess is that the forgery of File 6 exists because the
+     commitment "ring" is omitted from the challenge hash, i.e. an incomplete
+     Fiat-Shamir transform.  WE CHECKED THAT GUESS AND IT IS WRONG.  With
+     c = h(...|ring) the forger still succeeds, because its choice of ring
+     does not depend on c:
+
+         step 1  pick p
+         step 2  ring := p.D - A          (independent of c)
+         step 3  c    := h(...|ring)      (now computable)
+         step 4  Lam  := Cr + c.p
+         verify  Cr.D + c.(ring+A) = Cr.D + c.p.D = Lam.D     -- still valid
+
+     The real defect is the SHAPE of the verification equation.  In
+         Lam.D = Cr.D + c.(ring + A)
+     the challenge multiplies an ATTACKER-CONTROLLED point (ring + A), so the
+     relation proves knowledge of dlog(ring + A) -- a value the prover picks.
+     In a correct Schnorr the challenge multiplies the FIXED public key:
+         Lam.D = ring + c.A
+     Now a forger that sets ring = k.D with known k needs Lam = k + c.alpha,
+     which requires alpha; and if it tries to fix Lam first and solve
+     ring := Lam.D - c.A, then c depends on ring which depends on c, i.e. the
+     construction is circular and unavailable.
+
+   THIS FILE
+     Identical to File 6 except that the verification equation is replaced by
+     the correct Schnorr form (and, as in any sound Fiat-Shamir, the
+     commitment is bound into the challenge).  The forger retains every
+     capability it had in File 6, including mkring (public point subtraction)
+     and the certificate scalar Cr_u.
+
+   EXPECTED RESULT
+     RESULT event(evV_accept(IDu,t)) ==> event(evU_sign(IDu,t))  is true
+       => the forgery DISAPPEARS once the challenge multiplies the fixed
+          public key.  Contrast File 6, which reports "is false".
+       Together, Files 6 and 7 localise the defect to the equation shape.
+*)
+
+type h_scalar.
+type h_elem.
+
+const h_g: h_elem.
+
+fun hexp(h_elem, h_scalar): h_elem.
+fun sadd(h_scalar, h_scalar): h_scalar.
+fun smul(bitstring, h_scalar): h_scalar.
+fun padd(h_elem, h_elem): h_elem.
+fun pscal(bitstring, h_elem): h_elem.
+fun mkring(h_elem, h_elem): h_elem.        (* PUBLIC: ring := T - A *)
+
+equation forall x: h_scalar, y: h_scalar;
+    padd(hexp(h_g, x), hexp(h_g, y)) = hexp(h_g, sadd(x, y)).
+equation forall c: bitstring, x: h_scalar;
+    pscal(c, hexp(h_g, x)) = hexp(h_g, smul(c, x)).
+equation forall t: h_elem, a: h_elem;
+    padd(mkring(t, a), a) = t.
+
+fun hh(bitstring): bitstring.
+fun e2b(h_elem):   bitstring [typeConverter].
+fun s2b(h_scalar): bitstring [typeConverter].
+
+free h_ch: channel.
+free IDu: bitstring.
+
+event evU_sign(bitstring, bitstring).
+event evV_accept(bitstring, bitstring).
+
+query t: bitstring;
+    event(evV_accept(IDu, t)) ==> event(evU_sign(IDu, t)).
+
+(*** HONEST SIGNER -- correct Schnorr:  Lam = k + c.alpha ***)
+let DRN_u(alpha_u: h_scalar, Cr_u: h_scalar, Xu: h_elem, A_u: h_elem) =
+    new k: h_scalar;
+    new Nu: bitstring;
+    let ring_u = hexp(h_g, k) in
+    (* sound Fiat-Shamir: the commitment IS bound into the challenge *)
+    let c = hh((IDu, s2b(Cr_u), e2b(A_u), e2b(Xu), Nu, e2b(ring_u))) in
+    let Lambda_u = sadd(k, smul(c, alpha_u)) in
+    event evU_sign(IDu, hh((Nu, e2b(ring_u))));
+    out(h_ch, (Nu, ring_u, Lambda_u)).
+
+(*** VERIFIER -- correct Schnorr:  Lam.D  =?  ring + c.A ***)
+let DRN_v(Cr_u: h_scalar, Xu: h_elem, A_u: h_elem) =
+    in(h_ch, (mNu: bitstring, ring: h_elem, Lam: h_scalar));
+    let c = hh((IDu, s2b(Cr_u), e2b(A_u), e2b(Xu), mNu, e2b(ring))) in
+    if hexp(h_g, Lam) = padd(ring, pscal(c, A_u)) then
+    event evV_accept(IDu, hh((mNu, e2b(ring)))).
+
+process
+    new alpha_u: h_scalar;
+    new dCA: h_scalar;
+    new f_u: h_scalar;
+    let Cr_u = sadd(dCA, f_u) in
+    let A_u  = hexp(h_g, alpha_u) in
+    let Xu   = hexp(h_g, sadd(f_u, alpha_u)) in
+    (* the forger keeps every capability it had in File 6 *)
+    out(h_ch, (e2b(A_u), e2b(Xu), s2b(Cr_u)));
+    (   ( ! DRN_u(alpha_u, Cr_u, Xu, A_u) )
+      | ( ! DRN_v(Cr_u, Xu, A_u) )                )

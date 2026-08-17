@@ -1,0 +1,124 @@
+(*
+  ==========================================================================
+   FILE 6/9 : UNIVERSAL SIGNATURE FORGERY / IMPERSONATION   (Theorem 2)
+   Tool     : ProVerif 2.04 (Kali Linux x64)
+  ==========================================================================
+
+   A FAITHFUL MODEL OF THE POINT EQUATION (not a hash abstraction)
+     Earlier drafts abstracted the verification as a hash token over public
+     inputs.  That captured the flaw but invited the objection that the
+     abstraction, not the protocol, produced the forgery.  Here we model the
+     published relation itself,
+
+         Lambda.D  =?  Cr.D + c.(ring + A) ,
+
+     using three LINEAR equations, which keep the theory convergent:
+
+         padd(hexp(g,x), hexp(g,y)) = hexp(g, sadd(x,y))     (* P + Q      *)
+         pscal(c, hexp(g,x))        = hexp(g, smul(c,x))     (* c.P        *)
+         padd(mkring(T,A), A)       = T                      (* ring := T-A *)
+
+     The third equation is not a modelling convenience: point subtraction is
+     a PUBLIC group operation, so any party can form ring := T - A for a T of
+     its choosing.  mkring is available to the attacker exactly as it is in
+     the real group.
+
+   THE STRUCTURAL DEFECT UNDER TEST
+     Rewrite the verification with  T := ring + A .  The relation becomes
+         Lambda = Cr + c.dlog(T) ,
+     i.e. it is a proof of knowledge of  dlog(ring + A)  -- NOT of
+     alpha = dlog(A).  Since "ring" is an unconstrained wire value, the prover
+     CHOOSES that discrete logarithm freely:
+         pick p ;  T := p.D ;  ring := T - A ;  Lambda := Cr + c.p .
+     The relation therefore certifies a quantity the prover selected, which is
+     vacuous.  Note carefully that this is NOT repaired by hashing the
+     commitment into the challenge: the forger fixes ring BEFORE evaluating c
+     (step 2 above does not depend on c), so it may then compute
+     c = h(...|ring) and finish.  We verified this by hand and it is confirmed
+     mechanically in File 7.
+
+     The genuine repair changes the SHAPE of the equation so that the
+     challenge multiplies the FIXED public key:
+         correct Schnorr :   Lambda.D  =  ring + c.A
+     File 7 is the control that isolates exactly this.
+
+   PRECONDITION, STATED HONESTLY
+     The forger needs the SCALAR Cr_u.  It is NOT recoverable by a passive
+     outsider (it travels encrypted).  It IS held by every peer that DRN_u has
+     ever contacted, and by any captured node (capability C6).  We model that
+     precondition by publishing Cr_u -- i.e. we analyse the insider/peer
+     adversary of Section "Exploitability" and Corollary 1.
+
+   EXPECTED RESULT
+     RESULT event(evV_accept(IDu,t)) ==> event(evU_sign(IDu,t))  is false
+       => the verifier accepts a signature that the claimed signer never
+          produced: IMPERSONATION (Theorem 2 confirmed).
+     RESULT inj-event(...) ==> inj-event(...)                    is false
+*)
+
+type h_scalar.
+type h_elem.
+
+const h_g: h_elem.
+
+fun hexp(h_elem, h_scalar): h_elem.        (* x.D when applied to h_g *)
+fun sadd(h_scalar, h_scalar): h_scalar.    (* scalar addition          *)
+fun smul(bitstring, h_scalar): h_scalar.   (* challenge * scalar       *)
+fun padd(h_elem, h_elem): h_elem.          (* point addition           *)
+fun pscal(bitstring, h_elem): h_elem.      (* scalar mult of a point   *)
+fun mkring(h_elem, h_elem): h_elem.        (* PUBLIC: ring := T - A    *)
+
+equation forall x: h_scalar, y: h_scalar;
+    padd(hexp(h_g, x), hexp(h_g, y)) = hexp(h_g, sadd(x, y)).
+equation forall c: bitstring, x: h_scalar;
+    pscal(c, hexp(h_g, x)) = hexp(h_g, smul(c, x)).
+equation forall t: h_elem, a: h_elem;
+    padd(mkring(t, a), a) = t.
+
+fun hh(bitstring): bitstring.
+fun e2b(h_elem):   bitstring [typeConverter].
+fun s2b(h_scalar): bitstring [typeConverter].
+
+free h_ch: channel.
+free IDu: bitstring.
+
+event evU_sign(bitstring, bitstring).      (* u genuinely signed token t *)
+event evV_accept(bitstring, bitstring).    (* v accepted token t as u's  *)
+
+query t: bitstring;
+    event(evV_accept(IDu, t)) ==> event(evU_sign(IDu, t)).
+query t: bitstring;
+    inj-event(evV_accept(IDu, t)) ==> inj-event(evU_sign(IDu, t)).
+
+(*** HONEST SIGNER (Phase 1 of the published scheme) ***)
+let DRN_u(alpha_u: h_scalar, Cr_u: h_scalar, Xu: h_elem, A_u: h_elem) =
+    new omega_u:  h_scalar;
+    new omega_su: h_scalar;
+    new Nu: bitstring;
+    let ring_u = hexp(h_g, sadd(omega_u, omega_su)) in
+    (* the published challenge: ring_u is NOT among its inputs *)
+    let c = hh((IDu, s2b(Cr_u), e2b(A_u), e2b(Xu), Nu)) in
+    let Lambda_u = sadd(Cr_u, smul(c, sadd(sadd(omega_u, omega_su), alpha_u))) in
+    (* the token identifies the signed statement *)
+    event evU_sign(IDu, hh((Nu, e2b(ring_u))));
+    out(h_ch, (Nu, ring_u, Lambda_u)).
+
+(*** VERIFIER (Phase 2 checks of the published scheme) ***)
+let DRN_v(Cr_u: h_scalar, Xu: h_elem, A_u: h_elem) =
+    in(h_ch, (mNu: bitstring, ring: h_elem, Lam: h_scalar));
+    let c = hh((IDu, s2b(Cr_u), e2b(A_u), e2b(Xu), mNu)) in
+    let T = padd(ring, A_u) in
+    if hexp(h_g, Lam) = padd(hexp(h_g, Cr_u), pscal(c, T)) then
+    event evV_accept(IDu, hh((mNu, e2b(ring)))).
+
+process
+    new alpha_u: h_scalar;
+    new dCA: h_scalar;
+    new f_u: h_scalar;
+    let Cr_u = sadd(dCA, f_u) in
+    let A_u  = hexp(h_g, alpha_u) in
+    let Xu   = hexp(h_g, sadd(f_u, alpha_u)) in
+    (* Cr_u is available to any peer / captured node -- see PRECONDITION *)
+    out(h_ch, (e2b(A_u), e2b(Xu), s2b(Cr_u)));
+    (   ( ! DRN_u(alpha_u, Cr_u, Xu, A_u) )
+      | ( ! DRN_v(Cr_u, Xu, A_u) )                )

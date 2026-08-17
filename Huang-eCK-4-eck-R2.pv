@@ -1,0 +1,121 @@
+(*
+  ==========================================================================
+   FILE 4/9 : eCK MIXED-REVEAL BREAK, repair R2     (Theorem 3, case R2)
+   Tool     : ProVerif 2.04 (Kali Linux x64)
+   Revision : v2 -- single hard-wired test session (see MODELLING NOTE)
+  ==========================================================================
+
+   MODELLING NOTE -- why this file has no private channel
+     v1 delivered the two commitments over private channels and let both roles
+     replicate.  ProVerif abstracts a private channel as a message POOL: the
+     mess(c,...) fact records that a term MAY appear on the channel, but not
+     which session may consume it.  That abstraction is sound but incomplete,
+     and on this file it produced a derivation that spliced one initiator
+     session's request to a different initiator session's reply.  No executable
+     trace corresponds to such a splice, so ProVerif reported
+         RESULT not attacker_p1(secret_sk[]) cannot be proved
+     -- neither a proof nor an attack.
+
+     The eCK Test query concerns ONE designated session, so we model exactly
+     that: both parties' ephemerals are drawn in a SINGLE process, the complete
+     transcript is published on the public channel, and the eCK reveals are
+     applied.  The matched session then holds BY CONSTRUCTION, there is no
+     channel left to abstract, and the query is decided.
+
+     Note this is not a weakening.  The adversary still sees the entire
+     transcript, still holds the certificate scalars, and still gets both
+     reveals; it simply cannot substitute the peer's own commitment inside the
+     test session -- which eCK freshness forbids anyway, since substitution
+     destroys the matching session and then bars corrupting the peer.
+
+   eCK EMULATION
+       EphemeralKeyReveal(u) : out(h_leak, s2b(omega_u))  in phase 0.
+       Corrupt(v)            : phase 1; out(h_ch, s2b(alpha_v)).
+       Test                  : out(h_ch, hoplus(secret_sk, SK)); recovering
+                               secret_sk is equivalent to rebuilding SK.
+
+   FRESHNESS CHECK
+     Revealed: the EPHEMERAL of DRN_u and the LONG-TERM key of DRN_v.  These
+     belong to DISTINCT parties and a matching session exists, so the eCK
+     predicate -- which forbids only both secrets of the SAME party -- is
+     satisfied.  The test session is FRESH and the attack is admissible.
+
+   REPAIR R2 UNDER TEST
+     Psi_2 is UNCHANGED (it carries only the aggregate ring_v), and lambda is
+     redefined over that aggregate: lambda = w_u . ring_v, with the responder
+     computing (w_v + w*_v) . Omega_u.  The two agree by the DH equation.
+     R1 and R2 are the only two minimal repairs of the executability defect of
+     File 1; Files 3 and 4 show the eCK break survives BOTH, so no reading of
+     the specification is simultaneously correct and eCK-secure.
+
+   EXPECTED RESULT
+     RESULT not attacker_p1(secret_sk[]) is false      (eCK BREAK confirmed)
+*)
+
+type h_scalar.
+type h_elem.
+
+const h_g: h_elem.
+fun hexp(h_elem, h_scalar): h_elem.
+equation forall x: h_scalar, y: h_scalar;
+    hexp(hexp(h_g, x), y) = hexp(hexp(h_g, y), x).
+
+fun sadd(h_scalar, h_scalar): h_scalar.
+fun hh(bitstring): bitstring.
+fun hoplus(bitstring, bitstring): bitstring.
+equation forall x: bitstring, y: bitstring; hoplus(hoplus(x,y),y) = x.
+
+fun e2b(h_elem):   bitstring [typeConverter].
+fun s2b(h_scalar): bitstring [typeConverter].
+
+free h_ch:   channel.               (* public network                *)
+free h_leak: channel.               (* eCK EphemeralKeyReveal oracle *)
+free secret_sk: bitstring [private].
+
+free IDu: bitstring.
+free IDv: bitstring.
+
+(* ProVerif evaluates an UNPHASED attacker query at the MAXIMAL phase, so a
+   single phase-1 query is what we state.  To certify phase-0 secrecy, comment
+   out the phase-1 process at the bottom and re-run.                         *)
+query attacker(secret_sk) phase 1.
+
+process
+    (* ---- long-term material ---- *)
+    new alpha_u: h_scalar;
+    new alpha_v: h_scalar;
+    new dCA: h_scalar;
+    new f_u: h_scalar;
+    new f_v: h_scalar;
+    let Cr_u = sadd(dCA, f_u) in
+    let Cr_v = sadd(dCA, f_v) in
+    let A_u  = hexp(h_g, alpha_u) in
+    let A_v  = hexp(h_g, alpha_v) in
+    (* static keys and certificate scalars are held by any peer / captured node *)
+    out(h_ch, (e2b(A_u), e2b(A_v), s2b(Cr_u), s2b(Cr_v)));
+
+    (* ---- THE eCK TEST SESSION: one matched pair, by construction ---- *)
+    new omega_u:  h_scalar;
+    new omega_su: h_scalar;
+    new Nu: bitstring;
+    new omega_v:  h_scalar;
+    new omega_sv: h_scalar;
+    new Nv: bitstring;
+    let Om_u   = hexp(h_g, omega_u) in
+    let ring_u = hexp(h_g, sadd(omega_u, omega_su)) in
+    let ring_v = hexp(h_g, sadd(omega_v, omega_sv)) in
+
+    (* the FULL transcript is public; under R2 Psi_2 carries only ring_v *)
+    out(h_ch, (e2b(Om_u), e2b(ring_u), Nu, e2b(ring_v), Nv));
+
+    (* ---- eCK EphemeralKeyReveal(u) ---- *)
+    out(h_leak, s2b(omega_u));
+
+    (* ---- key derivation, initiator's view (repair R2) ---- *)
+    let lambda = hexp(ring_v, omega_u) in
+    let mu     = hexp(A_v, alpha_u) in
+    let SK     = hh((s2b(Cr_u), Nu, e2b(lambda), e2b(mu), Nv, s2b(Cr_v))) in
+    out(h_ch, hoplus(secret_sk, SK));
+
+    (* ---- eCK Corrupt(v), strictly after the session ---- *)
+    ( phase 1; out(h_ch, s2b(alpha_v)) )

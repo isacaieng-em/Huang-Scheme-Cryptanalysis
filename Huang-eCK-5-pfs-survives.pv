@@ -1,0 +1,139 @@
+(*
+  ==========================================================================
+   FILE 5/9 : FORWARD SECRECY -- NEGATIVE RESULT     (Proposition 2)
+   Tool     : ProVerif 2.04 (Kali Linux x64)
+  ==========================================================================
+
+   eCK EMULATION IN ProVerif (see README for the full rationale)
+     ProVerif's native adversary is Dolev-Yao.  The eCK oracles are emulated:
+       EphemeralKeyReveal    : NOT used in this file -- see Files 3 and 4.
+       Corrupt(u), Corrupt(v): both long-term keys released in phase 1,
+                               i.e. strictly AFTER the test session closed.
+       Test / freshness      : session-key secrecy is probed by publishing
+                               hoplus(secret_sk, SK); recovering secret_sk is
+                               equivalent to reconstructing SK.
+     MATCHED SESSION: the two ephemeral commitments are delivered over the
+     private channels c_u2v and c_v2u, while the ENTIRE transcript is still
+     published on
+     h_ch.  The adversary therefore sees everything a real eCK adversary sees
+     but cannot SUBSTITUTE the peer commitment.  This matters: substitution
+     destroys the matching session, and eCK freshness then forbids corrupting
+     the peer, so a "break" obtained that way would NOT be an eCK violation.
+
+     WHY THE CHANNELS ARE DIRECTED.  An earlier draft used ONE private channel
+     for both directions.  ProVerif then legitimately delivered an initiator's
+     Psi_1 to ANOTHER INITIATOR's Psi_2 input, so the "peer ephemeral" was a
+     second omega_u -- which is leaked on h_leak -- and a spurious derivation
+     appeared (File 3 reported "cannot be proved" on such a path).  Splitting
+     the channel into c_u2v and c_v2u makes initiator-to-initiator pairing
+     impossible by construction.  File 4 escaped the problem only by accident,
+     because its two tuples have different arities.
+
+   THIS FILE DELIBERATELY REPORTS THAT THE SCHEME *RESISTS* AN ATTACK
+     Proposition 2 of the analysis states that disclosure of BOTH long-term
+     keys after the session does NOT by itself yield the session key, because
+     lambda = w_u.w_v.D remains a Diffie-Hellman instance on which the
+     long-term keys give no leverage.  We mechanise that negative result here
+     rather than overclaiming a forward-secrecy break.
+
+     NOTE FOR REVIEWERS OF EARLIER DRAFTS.  A naive model that lets the
+     adversary SUPPLY the peer commitment does report "false" here -- but the
+     trace then shows the adversary injecting its own Omega_v, i.e. there is
+     NO MATCHING SESSION, and eCK freshness forbids corrupting the peer in
+     that configuration.  Such a "break" is a modelling artefact, not an
+     attack.  We therefore enforce the matched session (channels c_u2v / c_v2u) and
+     report the honest outcome.
+
+     To make the result as strong as possible we are GENEROUS to the
+     adversary: the certificate scalars Cr_u, Cr_v and both static public
+     keys are published outright, and BOTH long-term keys are corrupted.
+
+   EXPECTED RESULT
+     RESULT not attacker_p1(secret_sk[]) is true      (STILL secret)
+     CONFIRMED on ProVerif 2.04, with BOTH long-term keys corrupted in phase 1
+     and the certificate scalars published.
+       => forward secrecy is NOT broken by long-term compromise alone.
+       Contrast Files 3-4: adding ONE ephemeral reveal breaks it at once,
+       which is precisely why the defect is an eCK failure and not a
+       forward-secrecy failure.
+*)
+
+type h_scalar.
+type h_elem.
+
+const h_g: h_elem.
+fun hexp(h_elem, h_scalar): h_elem.
+equation forall x: h_scalar, y: h_scalar;
+    hexp(hexp(h_g, x), y) = hexp(hexp(h_g, y), x).
+
+fun sadd(h_scalar, h_scalar): h_scalar.
+fun hh(bitstring): bitstring.
+fun hoplus(bitstring, bitstring): bitstring.
+equation forall x: bitstring, y: bitstring; hoplus(hoplus(x,y),y) = x.
+
+fun e2b(h_elem):   bitstring [typeConverter].
+fun s2b(h_scalar): bitstring [typeConverter].
+
+free h_ch:   channel.               (* public network                        *)
+free c_u2v: channel [private].   (* initiator -> responder  *)
+free c_v2u: channel [private].   (* responder -> initiator  *)
+free secret_sk: bitstring [private].
+
+free IDu: bitstring.
+free IDv: bitstring.
+
+(* NOTE ON QUERY PHASES (observed in the 2.04 runs).
+   ProVerif evaluates an UNPHASED "query attacker(M)" at the MAXIMAL phase of
+   the process, so writing both
+       query attacker(secret_sk).
+       query attacker(secret_sk) phase 1.
+   yields TWO IDENTICAL phase-1 verdicts, not a phase-0/phase-1 pair.  We
+   therefore keep only the phase-1 query.  To certify phase-0 secrecy (no
+   corruption at all) comment out the "phase 1" process at the bottom of the
+   file and re-run; the query then genuinely refers to phase 0.             *)
+query attacker(secret_sk) phase 1.
+
+let DRN_u(alpha_u: h_scalar, Cr_u: h_scalar, Cr_v: h_scalar, A_v: h_elem) =
+    new omega_u:  h_scalar;
+    new omega_su: h_scalar;
+    new Nu: bitstring;
+    let Om_u   = hexp(h_g, omega_u) in
+    let ring_u = hexp(h_g, sadd(omega_u, omega_su)) in
+    out(c_u2v, (Om_u, ring_u, Nu));
+    out(h_ch, (e2b(Om_u), e2b(ring_u), Nu));
+    (* repair R1: Psi_2 carries Omega_v *)
+    in(c_v2u, (Om_v: h_elem, ring_v: h_elem, Nv: bitstring));
+    let lambda = hexp(Om_v, omega_u) in
+    let mu     = hexp(A_v, alpha_u) in
+    let SK_u = hh((s2b(Cr_u), Nu, e2b(lambda), e2b(mu), Nv, s2b(Cr_v))) in
+    out(h_ch, hoplus(secret_sk, SK_u)).
+
+let DRN_v(alpha_v: h_scalar, Cr_v: h_scalar, Cr_u: h_scalar, A_u: h_elem) =
+    in(c_u2v, (Om_u: h_elem, ring_u: h_elem, Nu: bitstring));
+    new omega_v:  h_scalar;
+    new omega_sv: h_scalar;
+    new Nv: bitstring;
+    let Om_v     = hexp(h_g, omega_v) in
+    let ring_v   = hexp(h_g, sadd(omega_v, omega_sv)) in
+    let lambda   = hexp(Om_u, omega_v) in
+    let mu       = hexp(A_u, alpha_v) in
+    let SK_v = hh((s2b(Cr_u), Nu, e2b(lambda), e2b(mu), Nv, s2b(Cr_v))) in
+    out(c_v2u, (Om_v, ring_v, Nv));
+    out(h_ch, (e2b(Om_v), e2b(ring_v), Nv)).
+
+process
+    new alpha_u: h_scalar;
+    new alpha_v: h_scalar;
+    new dCA: h_scalar;
+    new f_u: h_scalar;
+    new f_v: h_scalar;
+    let Cr_u = sadd(dCA, f_u) in
+    let Cr_v = sadd(dCA, f_v) in
+    let A_u  = hexp(h_g, alpha_u) in
+    let A_v  = hexp(h_g, alpha_v) in
+    (* static keys and certificate scalars are available to a peer/insider *)
+    out(h_ch, (e2b(A_u), e2b(A_v), s2b(Cr_u), s2b(Cr_v)));
+    (   ( ! DRN_u(alpha_u, Cr_u, Cr_v, A_v) )
+      | ( ! DRN_v(alpha_v, Cr_v, Cr_u, A_u) )
+        (* --- Corrupt(u) AND Corrupt(v) strictly AFTER the session --- *)
+      | ( phase 1; out(h_ch, (s2b(alpha_u), s2b(alpha_v))) )                )

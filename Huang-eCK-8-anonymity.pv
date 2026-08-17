@@ -1,0 +1,91 @@
+(*
+  ==========================================================================
+   FILE 8/9 : ANONYMITY AND UNLINKABILITY FAILURE           (Theorem 4)
+   Tool     : ProVerif 2.04 (Kali Linux x64)
+  ==========================================================================
+
+   CLAIM MECHANISED
+     Psi_1 transmits A_u = alpha_u.D and X_u = (f_u + alpha_u).D IN THE CLEAR.
+     Both are functions of long-term registration values only, hence constant
+     across every session of DRN_u.  A passive observer therefore links all
+     sessions of a drone.  Psi_2 additionally reveals ID_v in the clear, so
+     the responder is not anonymous even nominally.
+
+   HOW LINKABILITY IS PROBED
+     A private constant id_probe is masked with the static field:
+     out(hoplus(id_probe, A_u)).  Recovering id_probe is possible precisely
+     when the STATIC identifier is observable, so
+        attacker(id_probe) reachable  <=>  a permanent linkable identifier is
+                                           exposed on the wire.
+     This is the standard XOR-probe technique; the probe carries no meaning of
+     its own and is used only as a detector.
+
+   NOTE ON SCOPE
+     The published anonymity argument shows only that ID_u is encrypted.  That
+     is correct but immaterial: A_u is an equally permanent identifier and is
+     broadcast beside the ciphertext.  We mechanise the identifier that
+     actually matters.
+
+   EXPECTED RESULT
+     RESULT not attacker(id_probe)   is false   (probe recovered)
+       => a permanent identifier is exposed: ANONYMITY / UNLINKABILITY BROKEN.
+     RESULT not attacker(idv_probe)  is false   (responder identity in clear)
+*)
+
+type h_scalar.
+type h_elem.
+
+const h_g: h_elem.
+fun hexp(h_elem, h_scalar): h_elem.
+equation forall x: h_scalar, y: h_scalar;
+    hexp(hexp(h_g, x), y) = hexp(hexp(h_g, y), x).
+
+fun sadd(h_scalar, h_scalar): h_scalar.
+fun hh(bitstring): bitstring.
+fun hoplus(bitstring, bitstring): bitstring.
+equation forall x: bitstring, y: bitstring; hoplus(hoplus(x,y),y) = x.
+
+fun e2b(h_elem):   bitstring [typeConverter].
+fun s2b(h_scalar): bitstring [typeConverter].
+
+free h_ch: channel.
+free IDu: bitstring.
+free IDv: bitstring.
+
+free id_probe:  bitstring [private].   (* detector bound to the static A_u *)
+free idv_probe: bitstring [private].   (* detector bound to cleartext ID_v *)
+
+query attacker(id_probe).
+query attacker(idv_probe).
+
+(* Initiator: Psi_1 exposes A_u and X_u in the clear *)
+let DRN_u(alpha_u: h_scalar, Cr_u: h_scalar, f_u: h_scalar) =
+    new omega_u:  h_scalar;
+    new omega_su: h_scalar;
+    new Nu: bitstring;
+    let Om_u   = hexp(h_g, omega_u) in
+    let ring_u = hexp(h_g, sadd(omega_u, omega_su)) in
+    let A_u    = hexp(h_g, alpha_u) in
+    let Xu     = hexp(h_g, sadd(f_u, alpha_u)) in
+    (* published Psi_1: static A_u and X_u travel unencrypted *)
+    out(h_ch, (e2b(A_u), e2b(Xu), e2b(Om_u), e2b(ring_u), Nu));
+    (* detector: masked with the static identifier actually on the wire *)
+    out(h_ch, hoplus(id_probe, e2b(A_u))).
+
+(* Responder: Psi_2 exposes ID_v in the clear *)
+let DRN_v(alpha_v: h_scalar) =
+    in(h_ch, (mA_u: bitstring, mXu: bitstring, mOm: bitstring,
+              mring: bitstring, mNu: bitstring));
+    new omega_v: h_scalar;
+    let A_v = hexp(h_g, alpha_v) in
+    out(h_ch, (IDv, e2b(A_v)));
+    out(h_ch, hoplus(idv_probe, IDv)).
+
+process
+    new alpha_u: h_scalar;
+    new alpha_v: h_scalar;
+    new dCA: h_scalar;
+    new f_u: h_scalar;
+    let Cr_u = sadd(dCA, f_u) in
+    (   ( ! DRN_u(alpha_u, Cr_u, f_u) )
+      | ( ! DRN_v(alpha_v) )              )
