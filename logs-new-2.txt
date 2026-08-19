@@ -1,0 +1,1505 @@
+┌──(vinod㉿vinod)-[~/myResearchPapers/Huang/new-pv-files]
+└─$ proverif H3-CONTROL-no-envelope.pv       
+Linear part:
+hexp(hexp(D,x),y) = hexp(hexp(D,y),x)
+Completing equations...
+Completed equations:
+hexp(hexp(D,x),y) = hexp(hexp(D,y),x)
+Convergent part:
+hoplus(hoplus(a,b),b) = a
+Completing equations...
+Completed equations:
+hoplus(hoplus(a,b),b) = a
+Process 0 (that is, the initial process):
+{1}new alpha_u: scalar;
+{2}new alpha_v: scalar;
+{3}new Cr_u: bitstring;
+{4}new Cr_v: bitstring;
+{5}let A_u: elem = hexp(D,alpha_u) in
+{6}let A_v: elem = hexp(D,alpha_v) in
+{7}out(h_ch, A_u);
+{8}out(h_ch, A_v);
+{9}out(h_ch, Cr_u);
+(
+    {10}let alpha_u_1: scalar = alpha_u in
+    {11}let Cr_u_1: bitstring = Cr_u in
+    {12}new omega_u: scalar;
+    {13}new omega_su: scalar;
+    {14}new N_u: bitstring;
+    {15}out(leak_eph, omega_u);
+    {16}out(leak_eph, omega_su);
+    {17}out(leak_eph, N_u);
+    {18}let Om_u: elem = hexp(D,omega_u) in
+    {19}let Omr_u: elem = hexp(D,sadd(omega_u,omega_su)) in
+    {20}out(h_ch, (penc(A_v,(IDu,N_u,Cr_u_1)),Om_u,Omr_u,A_u))
+) | (
+    {21}let alpha_v_1: scalar = alpha_v in
+    {22}let Cr_v_1: bitstring = Cr_v in
+    {23}in(h_ch, (ct1: bitstring,Om_u_1: elem,Omr_u_1: elem,xA_u: elem));
+    {24}let (xIDu: bitstring,N_u_1: bitstring,xCr_u: bitstring) = pdec(alpha_v_1,ct1) in
+    {25}new omega_v: scalar;
+    {26}new omega_sv: scalar;
+    {27}new N_v: bitstring;
+    {28}let Om_v: elem = hexp(D,omega_v) in
+    {29}let Omr_v: elem = hexp(D,sadd(omega_v,omega_sv)) in
+    {30}let lam: elem = hexp(Om_u_1,omega_v) in
+    {31}let mu: elem = hexp(xA_u,alpha_v_1) in
+    {32}let SK: bitstring = hf((xCr_u,N_u_1,e2b(lam),e2b(mu),N_v,Cr_v_1)) in
+    {33}let none_v: bitstring = (N_v,IDv) in
+    {34}out(h_ch, ((none_v,Cr_v_1),Om_v,Omr_v,A_v));
+    {35}out(h_ch, hoplus(secret_sk,SK));
+    {36}out(h_ch, hoplus(lam_probe,e2b(lam)));
+    {37}out(h_ch, hoplus(mu_probe,e2b(mu)))
+) | (
+    {38}phase 1;
+    {39}out(leak_lt, alpha_v);
+    {40}out(h_ch, alpha_v);
+    {41}out(h_ch, Cr_v)
+)
+
+--  Process 1 (that is, process 0, with let moved downwards):
+{1}new alpha_u: scalar;
+{2}new alpha_v: scalar;
+{3}new Cr_u: bitstring;
+{4}new Cr_v: bitstring;
+{5}let A_u: elem = hexp(D,alpha_u) in
+{7}out(h_ch, A_u);
+{6}let A_v: elem = hexp(D,alpha_v) in
+{8}out(h_ch, A_v);
+{9}out(h_ch, Cr_u);
+(
+    {12}new omega_u: scalar;
+    {13}new omega_su: scalar;
+    {14}new N_u: bitstring;
+    {15}out(leak_eph, omega_u);
+    {16}out(leak_eph, omega_su);
+    {17}out(leak_eph, N_u);
+    {19}let Omr_u: elem = hexp(D,sadd(omega_u,omega_su)) in
+    {18}let Om_u: elem = hexp(D,omega_u) in
+    {11}let Cr_u_1: bitstring = Cr_u in
+    {20}out(h_ch, (penc(A_v,(IDu,N_u,Cr_u_1)),Om_u,Omr_u,A_u))
+) | (
+    {23}in(h_ch, (ct1: bitstring,Om_u_1: elem,Omr_u_1: elem,xA_u: elem));
+    {21}let alpha_v_1: scalar = alpha_v in
+    {24}let (xIDu: bitstring,N_u_1: bitstring,xCr_u: bitstring) = pdec(alpha_v_1,ct1) in
+    {25}new omega_v: scalar;
+    {26}new omega_sv: scalar;
+    {27}new N_v: bitstring;
+    {33}let none_v: bitstring = (N_v,IDv) in
+    {29}let Omr_v: elem = hexp(D,sadd(omega_v,omega_sv)) in
+    {28}let Om_v: elem = hexp(D,omega_v) in
+    {22}let Cr_v_1: bitstring = Cr_v in
+    {34}out(h_ch, ((none_v,Cr_v_1),Om_v,Omr_v,A_v));
+    {31}let mu: elem = hexp(xA_u,alpha_v_1) in
+    {30}let lam: elem = hexp(Om_u_1,omega_v) in
+    {32}let SK: bitstring = hf((xCr_u,N_u_1,e2b(lam),e2b(mu),N_v,Cr_v_1)) in
+    {35}out(h_ch, hoplus(secret_sk,SK));
+    {36}out(h_ch, hoplus(lam_probe,e2b(lam)));
+    {37}out(h_ch, hoplus(mu_probe,e2b(mu)))
+) | (
+    {38}phase 1;
+    {39}out(leak_lt, alpha_v);
+    {40}out(h_ch, alpha_v);
+    {41}out(h_ch, Cr_v)
+)
+
+-- Query not attacker_p1(secret_sk[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+200 rules inserted. Base: 172 rules (105 with conclusion selected). Queue: 85 rules.
+400 rules inserted. Base: 321 rules (107 with conclusion selected). Queue: 125 rules.
+600 rules inserted. Base: 481 rules (107 with conclusion selected). Queue: 145 rules.
+800 rules inserted. Base: 414 rules (107 with conclusion selected). Queue: 21 rules.
+Starting query not attacker_p1(secret_sk[])
+goal reachable: attacker_p1(secret_sk[])
+
+Derivation:
+Abbreviations:
+omega_v_1 = omega_v[xA_u = D,Omr_u_1 = Omr_u_2,Om_u_1 = D,ct1 = penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1))]
+N_v_1 = N_v[xA_u = D,Omr_u_1 = Omr_u_2,Om_u_1 = D,ct1 = penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1))]
+omega_sv_1 = omega_sv[xA_u = D,Omr_u_1 = Omr_u_2,Om_u_1 = D,ct1 = penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1))]
+N_v_2 = N_v[xA_u = xA_u_1,Omr_u_1 = Omr_u_3,Om_u_1 = Om_u_2,ct1 = penc(hexp(D,alpha_v[]),(xIDu_2,N_u_3,xCr_u_2))]
+omega_v_2 = omega_v[xA_u = xA_u_1,Omr_u_1 = Omr_u_3,Om_u_1 = Om_u_2,ct1 = penc(hexp(D,alpha_v[]),(xIDu_2,N_u_3,xCr_u_2))]
+omega_sv_2 = omega_sv[xA_u = xA_u_1,Omr_u_1 = Omr_u_3,Om_u_1 = Om_u_2,ct1 = penc(hexp(D,alpha_v[]),(xIDu_2,N_u_3,xCr_u_2))]
+
+1. The attacker has some term xA_u_1.
+attacker(xA_u_1).
+
+2. The attacker has some term Omr_u_3.
+attacker(Omr_u_3).
+
+3. The attacker has some term Om_u_2.
+attacker(Om_u_2).
+
+4. The attacker has some term xCr_u_2.
+attacker(xCr_u_2).
+
+5. The attacker has some term N_u_3.
+attacker(N_u_3).
+
+6. The attacker has some term xIDu_2.
+attacker(xIDu_2).
+
+7. By 6, the attacker may know xIDu_2.
+By 5, the attacker may know N_u_3.
+By 4, the attacker may know xCr_u_2.
+Using the function 3-tuple the attacker may obtain (xIDu_2,N_u_3,xCr_u_2).
+attacker((xIDu_2,N_u_3,xCr_u_2)).
+
+8. The message hexp(D,alpha_v[]) may be sent to the attacker at output {8}.
+attacker(hexp(D,alpha_v[])).
+
+9. By 8, the attacker may know hexp(D,alpha_v[]).
+By 7, the attacker may know (xIDu_2,N_u_3,xCr_u_2).
+Using the function penc the attacker may obtain penc(hexp(D,alpha_v[]),(xIDu_2,N_u_3,xCr_u_2)).
+attacker(penc(hexp(D,alpha_v[]),(xIDu_2,N_u_3,xCr_u_2))).
+
+10. By 9, the attacker may know penc(hexp(D,alpha_v[]),(xIDu_2,N_u_3,xCr_u_2)).
+By 3, the attacker may know Om_u_2.
+By 2, the attacker may know Omr_u_3.
+By 1, the attacker may know xA_u_1.
+Using the function 4-tuple the attacker may obtain (penc(hexp(D,alpha_v[]),(xIDu_2,N_u_3,xCr_u_2)),Om_u_2,Omr_u_3,xA_u_1).
+attacker((penc(hexp(D,alpha_v[]),(xIDu_2,N_u_3,xCr_u_2)),Om_u_2,Omr_u_3,xA_u_1)).
+
+11. The message (penc(hexp(D,alpha_v[]),(xIDu_2,N_u_3,xCr_u_2)),Om_u_2,Omr_u_3,xA_u_1) that the attacker may have by 10 may be received at input {23}.
+So the message (((N_v_2,IDv[]),Cr_v[]),hexp(D,omega_v_2),hexp(D,sadd(omega_v_2,omega_sv_2)),hexp(D,alpha_v[])) may be sent to the attacker at output {34}.
+attacker((((N_v_2,IDv[]),Cr_v[]),hexp(D,omega_v_2),hexp(D,sadd(omega_v_2,omega_sv_2)),hexp(D,alpha_v[]))).
+
+12. By 11, the attacker may know (((N_v_2,IDv[]),Cr_v[]),hexp(D,omega_v_2),hexp(D,sadd(omega_v_2,omega_sv_2)),hexp(D,alpha_v[])).
+Using the function 1-proj-4-tuple the attacker may obtain ((N_v_2,IDv[]),Cr_v[]).
+attacker(((N_v_2,IDv[]),Cr_v[])).
+
+13. By 12, the attacker may know ((N_v_2,IDv[]),Cr_v[]).
+Using the function 2-proj-2-tuple the attacker may obtain Cr_v[].
+attacker(Cr_v[]).
+
+14. Using the function D the attacker may obtain D.
+attacker(D).
+
+15. The attacker has some term Omr_u_2.
+attacker(Omr_u_2).
+
+16. The attacker has some term xCr_u_1.
+attacker(xCr_u_1).
+
+17. The attacker has some term N_u_2.
+attacker(N_u_2).
+
+18. The attacker has some term xIDu_1.
+attacker(xIDu_1).
+
+19. By 18, the attacker may know xIDu_1.
+By 17, the attacker may know N_u_2.
+By 16, the attacker may know xCr_u_1.
+Using the function 3-tuple the attacker may obtain (xIDu_1,N_u_2,xCr_u_1).
+attacker((xIDu_1,N_u_2,xCr_u_1)).
+
+20. By 8, the attacker may know hexp(D,alpha_v[]).
+By 19, the attacker may know (xIDu_1,N_u_2,xCr_u_1).
+Using the function penc the attacker may obtain penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)).
+attacker(penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1))).
+
+21. By 20, the attacker may know penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)).
+By 14, the attacker may know D.
+By 15, the attacker may know Omr_u_2.
+By 14, the attacker may know D.
+Using the function 4-tuple the attacker may obtain (penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)),D,Omr_u_2,D).
+attacker((penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)),D,Omr_u_2,D)).
+
+22. The message (penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)),D,Omr_u_2,D) that the attacker may have by 21 may be received at input {23}.
+So the message (((N_v_1,IDv[]),Cr_v[]),hexp(D,omega_v_1),hexp(D,sadd(omega_v_1,omega_sv_1)),hexp(D,alpha_v[])) may be sent to the attacker at output {34}.
+attacker((((N_v_1,IDv[]),Cr_v[]),hexp(D,omega_v_1),hexp(D,sadd(omega_v_1,omega_sv_1)),hexp(D,alpha_v[]))).
+
+23. By 22, the attacker may know (((N_v_1,IDv[]),Cr_v[]),hexp(D,omega_v_1),hexp(D,sadd(omega_v_1,omega_sv_1)),hexp(D,alpha_v[])).
+Using the function 1-proj-4-tuple the attacker may obtain ((N_v_1,IDv[]),Cr_v[]).
+attacker(((N_v_1,IDv[]),Cr_v[])).
+
+24. By 23, the attacker may know ((N_v_1,IDv[]),Cr_v[]).
+Using the function 1-proj-2-tuple the attacker may obtain (N_v_1,IDv[]).
+attacker((N_v_1,IDv[])).
+
+25. By 24, the attacker may know (N_v_1,IDv[]).
+Using the function 1-proj-2-tuple the attacker may obtain N_v_1.
+attacker(N_v_1).
+
+26. By 8, the attacker may know hexp(D,alpha_v[]).
+Using the function e2b the attacker may obtain e2b(hexp(D,alpha_v[])).
+attacker(e2b(hexp(D,alpha_v[]))).
+
+27. By 22, the attacker may know (((N_v_1,IDv[]),Cr_v[]),hexp(D,omega_v_1),hexp(D,sadd(omega_v_1,omega_sv_1)),hexp(D,alpha_v[])).
+Using the function 2-proj-4-tuple the attacker may obtain hexp(D,omega_v_1).
+attacker(hexp(D,omega_v_1)).
+
+28. By 27, the attacker may know hexp(D,omega_v_1).
+Using the function e2b the attacker may obtain e2b(hexp(D,omega_v_1)).
+attacker(e2b(hexp(D,omega_v_1))).
+
+29. By 16, the attacker may know xCr_u_1.
+By 17, the attacker may know N_u_2.
+By 28, the attacker may know e2b(hexp(D,omega_v_1)).
+By 26, the attacker may know e2b(hexp(D,alpha_v[])).
+By 25, the attacker may know N_v_1.
+By 13, the attacker may know Cr_v[].
+Using the function 6-tuple the attacker may obtain (xCr_u_1,N_u_2,e2b(hexp(D,omega_v_1)),e2b(hexp(D,alpha_v[])),N_v_1,Cr_v[]).
+attacker((xCr_u_1,N_u_2,e2b(hexp(D,omega_v_1)),e2b(hexp(D,alpha_v[])),N_v_1,Cr_v[])).
+
+30. By 29, the attacker may know (xCr_u_1,N_u_2,e2b(hexp(D,omega_v_1)),e2b(hexp(D,alpha_v[])),N_v_1,Cr_v[]).
+Using the function hf the attacker may obtain hf((xCr_u_1,N_u_2,e2b(hexp(D,omega_v_1)),e2b(hexp(D,alpha_v[])),N_v_1,Cr_v[])).
+attacker(hf((xCr_u_1,N_u_2,e2b(hexp(D,omega_v_1)),e2b(hexp(D,alpha_v[])),N_v_1,Cr_v[]))).
+
+31. The message (penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)),D,Omr_u_2,D) that the attacker may have by 21 may be received at input {23}.
+So the message hoplus(secret_sk[],hf((xCr_u_1,N_u_2,e2b(hexp(D,omega_v_1)),e2b(hexp(D,alpha_v[])),N_v_1,Cr_v[]))) may be sent to the attacker at output {35}.
+attacker(hoplus(secret_sk[],hf((xCr_u_1,N_u_2,e2b(hexp(D,omega_v_1)),e2b(hexp(D,alpha_v[])),N_v_1,Cr_v[])))).
+
+32. By 31, the attacker may know hoplus(secret_sk[],hf((xCr_u_1,N_u_2,e2b(hexp(D,omega_v_1)),e2b(hexp(D,alpha_v[])),N_v_1,Cr_v[]))).
+By 30, the attacker may know hf((xCr_u_1,N_u_2,e2b(hexp(D,omega_v_1)),e2b(hexp(D,alpha_v[])),N_v_1,Cr_v[])).
+Using the function hoplus the attacker may obtain secret_sk[].
+attacker(secret_sk[]).
+
+33. By 32, the attacker may know secret_sk[].
+So the attacker may know secret_sk[] in phase 1.
+attacker_p1(secret_sk[]).
+
+34. By 33, attacker_p1(secret_sk[]).
+The goal is reached, represented in the following fact:
+attacker_p1(secret_sk[]).
+
+
+Unified xIDu_2 with xIDu_1
+Unified N_u_3 with N_u_2
+Unified xCr_u_2 with xCr_u_1
+Unified Om_u_2 with D
+Unified Omr_u_3 with Omr_u_2
+Unified xA_u_1 with D
+Iterating unifyDerivation.
+Fixpoint reached: nothing more to unify.
+The clause after unifyDerivation is
+attacker_p1(secret_sk[])
+This clause still contradicts the query.
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new alpha_u: scalar creating alpha_u_2 at {1}
+
+new alpha_v: scalar creating alpha_v_2 at {2}
+
+new Cr_u: bitstring creating Cr_u_2 at {3}
+
+new Cr_v: bitstring creating Cr_v_2 at {4}
+
+out(h_ch, ~M) with ~M = hexp(D,alpha_u_2) at {7}
+
+out(h_ch, ~M_1) with ~M_1 = hexp(D,alpha_v_2) at {8}
+
+out(h_ch, ~M_2) with ~M_2 = Cr_u_2 at {9}
+
+new omega_u: scalar creating omega_u_1 at {12}
+
+new omega_su: scalar creating omega_su_1 at {13}
+
+new N_u: bitstring creating N_u_2 at {14}
+
+out(leak_eph, ~M_3) with ~M_3 = omega_u_1 at {15}
+
+out(leak_eph, ~M_4) with ~M_4 = omega_su_1 at {16}
+
+out(leak_eph, ~M_5) with ~M_5 = N_u_2 at {17}
+
+out(h_ch, (~M_6,~M_7,~M_8,~M_9)) with ~M_6 = penc(hexp(D,alpha_v_2),(IDu,N_u_2,Cr_u_2)), ~M_7 = hexp(D,omega_u_1), ~M_8 = hexp(D,sadd(omega_u_1,omega_su_1)), ~M_9 = hexp(D,alpha_u_2) at {20}
+
+in(h_ch, (penc(~M_1,(a,a_1,a_2)),D,a_3,D)) with penc(~M_1,(a,a_1,a_2)) = penc(hexp(D,alpha_v_2),(a,a_1,a_2)) at {23}
+
+new omega_v: scalar creating omega_v_1 at {25}
+
+new omega_sv: scalar creating omega_sv_1 at {26}
+
+new N_v: bitstring creating N_v_1 at {27}
+
+out(h_ch, (((~M_10,~M_11),~M_12),~M_13,~M_14,~M_15)) with ~M_10 = N_v_1, ~M_11 = IDv, ~M_12 = Cr_v_2, ~M_13 = hexp(D,omega_v_1), ~M_14 = hexp(D,sadd(omega_v_1,omega_sv_1)), ~M_15 = hexp(D,alpha_v_2) at {34}
+
+out(h_ch, ~M_16) with ~M_16 = hoplus(secret_sk,hf((a_2,a_1,e2b(hexp(D,omega_v_1)),e2b(hexp(D,alpha_v_2)),N_v_1,Cr_v_2))) at {35}
+
+out(h_ch, ~M_17) with ~M_17 = hoplus(lam_probe,e2b(hexp(D,omega_v_1))) at {36}
+
+out(h_ch, ~M_18) with ~M_18 = hoplus(mu_probe,e2b(hexp(D,alpha_v_2))) at {37}
+
+The attacker has the message hoplus(~M_16,hf((a_2,a_1,e2b(~M_13),e2b(~M_1),~M_10,~M_12))) = secret_sk in phase 1.
+A trace has been found.
+RESULT not attacker_p1(secret_sk[]) is false.
+-- Query not attacker_p1(lam_probe[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+200 rules inserted. Base: 172 rules (105 with conclusion selected). Queue: 85 rules.
+400 rules inserted. Base: 321 rules (107 with conclusion selected). Queue: 125 rules.
+600 rules inserted. Base: 481 rules (107 with conclusion selected). Queue: 145 rules.
+800 rules inserted. Base: 414 rules (107 with conclusion selected). Queue: 21 rules.
+Starting query not attacker_p1(lam_probe[])
+goal reachable: attacker_p1(lam_probe[])
+
+Derivation:
+Abbreviations:
+omega_v_1 = omega_v[xA_u = xA_u_1,Omr_u_1 = Omr_u_2,Om_u_1 = D,ct1 = penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1))]
+N_v_1 = N_v[xA_u = xA_u_1,Omr_u_1 = Omr_u_2,Om_u_1 = D,ct1 = penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1))]
+omega_sv_1 = omega_sv[xA_u = xA_u_1,Omr_u_1 = Omr_u_2,Om_u_1 = D,ct1 = penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1))]
+
+1. The attacker has some term xA_u_1.
+attacker(xA_u_1).
+
+2. The attacker has some term Omr_u_2.
+attacker(Omr_u_2).
+
+3. Using the function D the attacker may obtain D.
+attacker(D).
+
+4. The attacker has some term xCr_u_1.
+attacker(xCr_u_1).
+
+5. The attacker has some term N_u_2.
+attacker(N_u_2).
+
+6. The attacker has some term xIDu_1.
+attacker(xIDu_1).
+
+7. By 6, the attacker may know xIDu_1.
+By 5, the attacker may know N_u_2.
+By 4, the attacker may know xCr_u_1.
+Using the function 3-tuple the attacker may obtain (xIDu_1,N_u_2,xCr_u_1).
+attacker((xIDu_1,N_u_2,xCr_u_1)).
+
+8. The message hexp(D,alpha_v[]) may be sent to the attacker at output {8}.
+attacker(hexp(D,alpha_v[])).
+
+9. By 8, the attacker may know hexp(D,alpha_v[]).
+By 7, the attacker may know (xIDu_1,N_u_2,xCr_u_1).
+Using the function penc the attacker may obtain penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)).
+attacker(penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1))).
+
+10. By 9, the attacker may know penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)).
+By 3, the attacker may know D.
+By 2, the attacker may know Omr_u_2.
+By 1, the attacker may know xA_u_1.
+Using the function 4-tuple the attacker may obtain (penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)),D,Omr_u_2,xA_u_1).
+attacker((penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)),D,Omr_u_2,xA_u_1)).
+
+11. The message (penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)),D,Omr_u_2,xA_u_1) that the attacker may have by 10 may be received at input {23}.
+So the message (((N_v_1,IDv[]),Cr_v[]),hexp(D,omega_v_1),hexp(D,sadd(omega_v_1,omega_sv_1)),hexp(D,alpha_v[])) may be sent to the attacker at output {34}.
+attacker((((N_v_1,IDv[]),Cr_v[]),hexp(D,omega_v_1),hexp(D,sadd(omega_v_1,omega_sv_1)),hexp(D,alpha_v[]))).
+
+12. By 11, the attacker may know (((N_v_1,IDv[]),Cr_v[]),hexp(D,omega_v_1),hexp(D,sadd(omega_v_1,omega_sv_1)),hexp(D,alpha_v[])).
+Using the function 2-proj-4-tuple the attacker may obtain hexp(D,omega_v_1).
+attacker(hexp(D,omega_v_1)).
+
+13. By 12, the attacker may know hexp(D,omega_v_1).
+Using the function e2b the attacker may obtain e2b(hexp(D,omega_v_1)).
+attacker(e2b(hexp(D,omega_v_1))).
+
+14. The message (penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)),D,Omr_u_2,xA_u_1) that the attacker may have by 10 may be received at input {23}.
+So the message hoplus(lam_probe[],e2b(hexp(D,omega_v_1))) may be sent to the attacker at output {36}.
+attacker(hoplus(lam_probe[],e2b(hexp(D,omega_v_1)))).
+
+15. By 14, the attacker may know hoplus(lam_probe[],e2b(hexp(D,omega_v_1))).
+By 13, the attacker may know e2b(hexp(D,omega_v_1)).
+Using the function hoplus the attacker may obtain lam_probe[].
+attacker(lam_probe[]).
+
+16. By 15, the attacker may know lam_probe[].
+So the attacker may know lam_probe[] in phase 1.
+attacker_p1(lam_probe[]).
+
+17. By 16, attacker_p1(lam_probe[]).
+The goal is reached, represented in the following fact:
+attacker_p1(lam_probe[]).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new alpha_u: scalar creating alpha_u_2 at {1}
+
+new alpha_v: scalar creating alpha_v_2 at {2}
+
+new Cr_u: bitstring creating Cr_u_2 at {3}
+
+new Cr_v: bitstring creating Cr_v_2 at {4}
+
+out(h_ch, ~M) with ~M = hexp(D,alpha_u_2) at {7}
+
+out(h_ch, ~M_1) with ~M_1 = hexp(D,alpha_v_2) at {8}
+
+out(h_ch, ~M_2) with ~M_2 = Cr_u_2 at {9}
+
+new omega_u: scalar creating omega_u_1 at {12}
+
+new omega_su: scalar creating omega_su_1 at {13}
+
+new N_u: bitstring creating N_u_2 at {14}
+
+out(leak_eph, ~M_3) with ~M_3 = omega_u_1 at {15}
+
+out(leak_eph, ~M_4) with ~M_4 = omega_su_1 at {16}
+
+out(leak_eph, ~M_5) with ~M_5 = N_u_2 at {17}
+
+out(h_ch, (~M_6,~M_7,~M_8,~M_9)) with ~M_6 = penc(hexp(D,alpha_v_2),(IDu,N_u_2,Cr_u_2)), ~M_7 = hexp(D,omega_u_1), ~M_8 = hexp(D,sadd(omega_u_1,omega_su_1)), ~M_9 = hexp(D,alpha_u_2) at {20}
+
+in(h_ch, (penc(~M_1,(a,a_1,a_2)),D,a_3,a_4)) with penc(~M_1,(a,a_1,a_2)) = penc(hexp(D,alpha_v_2),(a,a_1,a_2)) at {23}
+
+new omega_v: scalar creating omega_v_1 at {25}
+
+new omega_sv: scalar creating omega_sv_1 at {26}
+
+new N_v: bitstring creating N_v_1 at {27}
+
+out(h_ch, (((~M_10,~M_11),~M_12),~M_13,~M_14,~M_15)) with ~M_10 = N_v_1, ~M_11 = IDv, ~M_12 = Cr_v_2, ~M_13 = hexp(D,omega_v_1), ~M_14 = hexp(D,sadd(omega_v_1,omega_sv_1)), ~M_15 = hexp(D,alpha_v_2) at {34}
+
+out(h_ch, ~M_16) with ~M_16 = hoplus(secret_sk,hf((a_2,a_1,e2b(hexp(D,omega_v_1)),e2b(hexp(a_4,alpha_v_2)),N_v_1,Cr_v_2))) at {35}
+
+out(h_ch, ~M_17) with ~M_17 = hoplus(lam_probe,e2b(hexp(D,omega_v_1))) at {36}
+
+out(h_ch, ~M_18) with ~M_18 = hoplus(mu_probe,e2b(hexp(a_4,alpha_v_2))) at {37}
+
+The attacker has the message hoplus(~M_17,e2b(~M_13)) = lam_probe in phase 1.
+A trace has been found.
+RESULT not attacker_p1(lam_probe[]) is false.
+-- Query not attacker_p1(mu_probe[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+200 rules inserted. Base: 172 rules (105 with conclusion selected). Queue: 85 rules.
+400 rules inserted. Base: 321 rules (107 with conclusion selected). Queue: 125 rules.
+600 rules inserted. Base: 481 rules (107 with conclusion selected). Queue: 145 rules.
+800 rules inserted. Base: 414 rules (107 with conclusion selected). Queue: 21 rules.
+Starting query not attacker_p1(mu_probe[])
+goal reachable: attacker_p1(mu_probe[])
+
+Derivation:
+
+1. The message hexp(D,alpha_v[]) may be sent to the attacker at output {8}.
+attacker(hexp(D,alpha_v[])).
+
+2. By 1, the attacker may know hexp(D,alpha_v[]).
+Using the function e2b the attacker may obtain e2b(hexp(D,alpha_v[])).
+attacker(e2b(hexp(D,alpha_v[]))).
+
+3. Using the function D the attacker may obtain D.
+attacker(D).
+
+4. The attacker has some term Omr_u_2.
+attacker(Omr_u_2).
+
+5. The attacker has some term Om_u_2.
+attacker(Om_u_2).
+
+6. The attacker has some term xCr_u_1.
+attacker(xCr_u_1).
+
+7. The attacker has some term N_u_2.
+attacker(N_u_2).
+
+8. The attacker has some term xIDu_1.
+attacker(xIDu_1).
+
+9. By 8, the attacker may know xIDu_1.
+By 7, the attacker may know N_u_2.
+By 6, the attacker may know xCr_u_1.
+Using the function 3-tuple the attacker may obtain (xIDu_1,N_u_2,xCr_u_1).
+attacker((xIDu_1,N_u_2,xCr_u_1)).
+
+10. By 1, the attacker may know hexp(D,alpha_v[]).
+By 9, the attacker may know (xIDu_1,N_u_2,xCr_u_1).
+Using the function penc the attacker may obtain penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)).
+attacker(penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1))).
+
+11. By 10, the attacker may know penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)).
+By 5, the attacker may know Om_u_2.
+By 4, the attacker may know Omr_u_2.
+By 3, the attacker may know D.
+Using the function 4-tuple the attacker may obtain (penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)),Om_u_2,Omr_u_2,D).
+attacker((penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)),Om_u_2,Omr_u_2,D)).
+
+12. The message (penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)),Om_u_2,Omr_u_2,D) that the attacker may have by 11 may be received at input {23}.
+So the message hoplus(mu_probe[],e2b(hexp(D,alpha_v[]))) may be sent to the attacker at output {37}.
+attacker(hoplus(mu_probe[],e2b(hexp(D,alpha_v[])))).
+
+13. By 12, the attacker may know hoplus(mu_probe[],e2b(hexp(D,alpha_v[]))).
+By 2, the attacker may know e2b(hexp(D,alpha_v[])).
+Using the function hoplus the attacker may obtain mu_probe[].
+attacker(mu_probe[]).
+
+14. By 13, the attacker may know mu_probe[].
+So the attacker may know mu_probe[] in phase 1.
+attacker_p1(mu_probe[]).
+
+15. By 14, attacker_p1(mu_probe[]).
+The goal is reached, represented in the following fact:
+attacker_p1(mu_probe[]).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new alpha_u: scalar creating alpha_u_2 at {1}
+
+new alpha_v: scalar creating alpha_v_2 at {2}
+
+new Cr_u: bitstring creating Cr_u_2 at {3}
+
+new Cr_v: bitstring creating Cr_v_2 at {4}
+
+out(h_ch, ~M) with ~M = hexp(D,alpha_u_2) at {7}
+
+out(h_ch, ~M_1) with ~M_1 = hexp(D,alpha_v_2) at {8}
+
+out(h_ch, ~M_2) with ~M_2 = Cr_u_2 at {9}
+
+new omega_u: scalar creating omega_u_1 at {12}
+
+new omega_su: scalar creating omega_su_1 at {13}
+
+new N_u: bitstring creating N_u_2 at {14}
+
+out(leak_eph, ~M_3) with ~M_3 = omega_u_1 at {15}
+
+out(leak_eph, ~M_4) with ~M_4 = omega_su_1 at {16}
+
+out(leak_eph, ~M_5) with ~M_5 = N_u_2 at {17}
+
+out(h_ch, (~M_6,~M_7,~M_8,~M_9)) with ~M_6 = penc(hexp(D,alpha_v_2),(IDu,N_u_2,Cr_u_2)), ~M_7 = hexp(D,omega_u_1), ~M_8 = hexp(D,sadd(omega_u_1,omega_su_1)), ~M_9 = hexp(D,alpha_u_2) at {20}
+
+in(h_ch, (penc(~M_1,(a,a_1,a_2)),a_3,a_4,D)) with penc(~M_1,(a,a_1,a_2)) = penc(hexp(D,alpha_v_2),(a,a_1,a_2)) at {23}
+
+new omega_v: scalar creating omega_v_1 at {25}
+
+new omega_sv: scalar creating omega_sv_1 at {26}
+
+new N_v: bitstring creating N_v_1 at {27}
+
+out(h_ch, (((~M_10,~M_11),~M_12),~M_13,~M_14,~M_15)) with ~M_10 = N_v_1, ~M_11 = IDv, ~M_12 = Cr_v_2, ~M_13 = hexp(D,omega_v_1), ~M_14 = hexp(D,sadd(omega_v_1,omega_sv_1)), ~M_15 = hexp(D,alpha_v_2) at {34}
+
+out(h_ch, ~M_16) with ~M_16 = hoplus(secret_sk,hf((a_2,a_1,e2b(hexp(a_3,omega_v_1)),e2b(hexp(D,alpha_v_2)),N_v_1,Cr_v_2))) at {35}
+
+out(h_ch, ~M_17) with ~M_17 = hoplus(lam_probe,e2b(hexp(a_3,omega_v_1))) at {36}
+
+out(h_ch, ~M_18) with ~M_18 = hoplus(mu_probe,e2b(hexp(D,alpha_v_2))) at {37}
+
+The attacker has the message hoplus(~M_18,e2b(~M_1)) = mu_probe in phase 1.
+A trace has been found.
+RESULT not attacker_p1(mu_probe[]) is false.
+
+--------------------------------------------------------------
+Verification summary:
+
+Query not attacker_p1(secret_sk[]) is false.
+
+Query not attacker_p1(lam_probe[]) is false.
+
+Query not attacker_p1(mu_probe[]) is false.
+
+--------------------------------------------------------------
+
+                                                                                   
+┌──(vinod㉿vinod)-[~/myResearchPapers/Huang/new-pv-files]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+┌──(vinod㉿vinod)-[~/myResearchPapers/Huang/new-pv-files]
+└─$ proverif H3-eck-R1-corrected.pv 
+Linear part:
+hexp(hexp(D,x),y) = hexp(hexp(D,y),x)
+Completing equations...
+Completed equations:
+hexp(hexp(D,x),y) = hexp(hexp(D,y),x)
+Convergent part:
+hoplus(hoplus(a,b),b) = a
+Completing equations...
+Completed equations:
+hoplus(hoplus(a,b),b) = a
+Process 0 (that is, the initial process):
+{1}new alpha_u: scalar;
+{2}new alpha_v: scalar;
+{3}new Cr_u: bitstring;
+{4}new Cr_v: bitstring;
+{5}let A_u: elem = hexp(D,alpha_u) in
+{6}let A_v: elem = hexp(D,alpha_v) in
+{7}out(h_ch, A_u);
+{8}out(h_ch, A_v);
+{9}out(h_ch, Cr_u);
+(
+    {10}let alpha_u_1: scalar = alpha_u in
+    {11}let Cr_u_1: bitstring = Cr_u in
+    {12}new omega_u: scalar;
+    {13}new omega_su: scalar;
+    {14}new N_u: bitstring;
+    {15}out(leak_eph, omega_u);
+    {16}out(leak_eph, omega_su);
+    {17}out(leak_eph, N_u);
+    {18}let Om_u: elem = hexp(D,omega_u) in
+    {19}let Omr_u: elem = hexp(D,sadd(omega_u,omega_su)) in
+    {20}out(h_ch, (penc(A_v,(IDu,N_u,Cr_u_1)),Om_u,Omr_u,A_u))
+) | (
+    {21}let alpha_v_1: scalar = alpha_v in
+    {22}let Cr_v_1: bitstring = Cr_v in
+    {23}in(h_ch, (ct1: bitstring,Om_u_1: elem,Omr_u_1: elem,xA_u: elem));
+    {24}let (xIDu: bitstring,N_u_1: bitstring,xCr_u: bitstring) = pdec(alpha_v_1,ct1) in
+    {25}new omega_v: scalar;
+    {26}new omega_sv: scalar;
+    {27}new N_v: bitstring;
+    {28}let Om_v: elem = hexp(D,omega_v) in
+    {29}let Omr_v: elem = hexp(D,sadd(omega_v,omega_sv)) in
+    {30}let lam: elem = hexp(Om_u_1,omega_v) in
+    {31}let mu: elem = hexp(xA_u,alpha_v_1) in
+    {32}let SK: bitstring = hf((xCr_u,N_u_1,e2b(lam),e2b(mu),N_v,Cr_v_1)) in
+    {33}let none_v: bitstring = (N_v,IDv) in
+    {34}out(h_ch, (penc(A_u,(none_v,Cr_v_1)),Om_v,Omr_v,A_v));
+    {35}out(h_ch, hoplus(secret_sk,SK));
+    {36}out(h_ch, hoplus(lam_probe,e2b(lam)));
+    {37}out(h_ch, hoplus(mu_probe,e2b(mu)))
+) | (
+    {38}phase 1;
+    {39}out(leak_lt, alpha_v);
+    {40}out(h_ch, alpha_v);
+    {41}out(h_ch, Cr_v)
+)
+
+--  Process 1 (that is, process 0, with let moved downwards):
+{1}new alpha_u: scalar;
+{2}new alpha_v: scalar;
+{3}new Cr_u: bitstring;
+{4}new Cr_v: bitstring;
+{5}let A_u: elem = hexp(D,alpha_u) in
+{7}out(h_ch, A_u);
+{6}let A_v: elem = hexp(D,alpha_v) in
+{8}out(h_ch, A_v);
+{9}out(h_ch, Cr_u);
+(
+    {12}new omega_u: scalar;
+    {13}new omega_su: scalar;
+    {14}new N_u: bitstring;
+    {15}out(leak_eph, omega_u);
+    {16}out(leak_eph, omega_su);
+    {17}out(leak_eph, N_u);
+    {19}let Omr_u: elem = hexp(D,sadd(omega_u,omega_su)) in
+    {18}let Om_u: elem = hexp(D,omega_u) in
+    {11}let Cr_u_1: bitstring = Cr_u in
+    {20}out(h_ch, (penc(A_v,(IDu,N_u,Cr_u_1)),Om_u,Omr_u,A_u))
+) | (
+    {23}in(h_ch, (ct1: bitstring,Om_u_1: elem,Omr_u_1: elem,xA_u: elem));
+    {21}let alpha_v_1: scalar = alpha_v in
+    {24}let (xIDu: bitstring,N_u_1: bitstring,xCr_u: bitstring) = pdec(alpha_v_1,ct1) in
+    {25}new omega_v: scalar;
+    {26}new omega_sv: scalar;
+    {27}new N_v: bitstring;
+    {33}let none_v: bitstring = (N_v,IDv) in
+    {29}let Omr_v: elem = hexp(D,sadd(omega_v,omega_sv)) in
+    {28}let Om_v: elem = hexp(D,omega_v) in
+    {22}let Cr_v_1: bitstring = Cr_v in
+    {34}out(h_ch, (penc(A_u,(none_v,Cr_v_1)),Om_v,Omr_v,A_v));
+    {31}let mu: elem = hexp(xA_u,alpha_v_1) in
+    {30}let lam: elem = hexp(Om_u_1,omega_v) in
+    {32}let SK: bitstring = hf((xCr_u,N_u_1,e2b(lam),e2b(mu),N_v,Cr_v_1)) in
+    {35}out(h_ch, hoplus(secret_sk,SK));
+    {36}out(h_ch, hoplus(lam_probe,e2b(lam)));
+    {37}out(h_ch, hoplus(mu_probe,e2b(mu)))
+) | (
+    {38}phase 1;
+    {39}out(leak_lt, alpha_v);
+    {40}out(h_ch, alpha_v);
+    {41}out(h_ch, Cr_v)
+)
+
+-- Query not attacker_p1(secret_sk[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+200 rules inserted. Base: 174 rules (101 with conclusion selected). Queue: 82 rules.
+400 rules inserted. Base: 323 rules (106 with conclusion selected). Queue: 124 rules.
+600 rules inserted. Base: 517 rules (106 with conclusion selected). Queue: 143 rules.
+800 rules inserted. Base: 717 rules (106 with conclusion selected). Queue: 16 rules.
+Starting query not attacker_p1(secret_sk[])
+RESULT not attacker_p1(secret_sk[]) is true.
+-- Query not attacker_p1(lam_probe[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+200 rules inserted. Base: 174 rules (101 with conclusion selected). Queue: 82 rules.
+400 rules inserted. Base: 323 rules (106 with conclusion selected). Queue: 124 rules.
+600 rules inserted. Base: 517 rules (106 with conclusion selected). Queue: 143 rules.
+800 rules inserted. Base: 717 rules (106 with conclusion selected). Queue: 16 rules.
+Starting query not attacker_p1(lam_probe[])
+goal reachable: attacker_p1(lam_probe[])
+
+Derivation:
+Abbreviations:
+omega_v_1 = omega_v[xA_u = xA_u_1,Omr_u_1 = Omr_u_2,Om_u_1 = D,ct1 = penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1))]
+N_v_1 = N_v[xA_u = xA_u_1,Omr_u_1 = Omr_u_2,Om_u_1 = D,ct1 = penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1))]
+omega_sv_1 = omega_sv[xA_u = xA_u_1,Omr_u_1 = Omr_u_2,Om_u_1 = D,ct1 = penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1))]
+
+1. The attacker has some term xA_u_1.
+attacker(xA_u_1).
+
+2. The attacker has some term Omr_u_2.
+attacker(Omr_u_2).
+
+3. Using the function D the attacker may obtain D.
+attacker(D).
+
+4. The attacker has some term xCr_u_1.
+attacker(xCr_u_1).
+
+5. The attacker has some term N_u_2.
+attacker(N_u_2).
+
+6. The attacker has some term xIDu_1.
+attacker(xIDu_1).
+
+7. By 6, the attacker may know xIDu_1.
+By 5, the attacker may know N_u_2.
+By 4, the attacker may know xCr_u_1.
+Using the function 3-tuple the attacker may obtain (xIDu_1,N_u_2,xCr_u_1).
+attacker((xIDu_1,N_u_2,xCr_u_1)).
+
+8. The message hexp(D,alpha_v[]) may be sent to the attacker at output {8}.
+attacker(hexp(D,alpha_v[])).
+
+9. By 8, the attacker may know hexp(D,alpha_v[]).
+By 7, the attacker may know (xIDu_1,N_u_2,xCr_u_1).
+Using the function penc the attacker may obtain penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)).
+attacker(penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1))).
+
+10. By 9, the attacker may know penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)).
+By 3, the attacker may know D.
+By 2, the attacker may know Omr_u_2.
+By 1, the attacker may know xA_u_1.
+Using the function 4-tuple the attacker may obtain (penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)),D,Omr_u_2,xA_u_1).
+attacker((penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)),D,Omr_u_2,xA_u_1)).
+
+11. The message (penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)),D,Omr_u_2,xA_u_1) that the attacker may have by 10 may be received at input {23}.
+So the message (penc(hexp(D,alpha_u[]),((N_v_1,IDv[]),Cr_v[])),hexp(D,omega_v_1),hexp(D,sadd(omega_v_1,omega_sv_1)),hexp(D,alpha_v[])) may be sent to the attacker at output {34}.
+attacker((penc(hexp(D,alpha_u[]),((N_v_1,IDv[]),Cr_v[])),hexp(D,omega_v_1),hexp(D,sadd(omega_v_1,omega_sv_1)),hexp(D,alpha_v[]))).
+
+12. By 11, the attacker may know (penc(hexp(D,alpha_u[]),((N_v_1,IDv[]),Cr_v[])),hexp(D,omega_v_1),hexp(D,sadd(omega_v_1,omega_sv_1)),hexp(D,alpha_v[])).
+Using the function 2-proj-4-tuple the attacker may obtain hexp(D,omega_v_1).
+attacker(hexp(D,omega_v_1)).
+
+13. By 12, the attacker may know hexp(D,omega_v_1).
+Using the function e2b the attacker may obtain e2b(hexp(D,omega_v_1)).
+attacker(e2b(hexp(D,omega_v_1))).
+
+14. The message (penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)),D,Omr_u_2,xA_u_1) that the attacker may have by 10 may be received at input {23}.
+So the message hoplus(lam_probe[],e2b(hexp(D,omega_v_1))) may be sent to the attacker at output {36}.
+attacker(hoplus(lam_probe[],e2b(hexp(D,omega_v_1)))).
+
+15. By 14, the attacker may know hoplus(lam_probe[],e2b(hexp(D,omega_v_1))).
+By 13, the attacker may know e2b(hexp(D,omega_v_1)).
+Using the function hoplus the attacker may obtain lam_probe[].
+attacker(lam_probe[]).
+
+16. By 15, the attacker may know lam_probe[].
+So the attacker may know lam_probe[] in phase 1.
+attacker_p1(lam_probe[]).
+
+17. By 16, attacker_p1(lam_probe[]).
+The goal is reached, represented in the following fact:
+attacker_p1(lam_probe[]).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new alpha_u: scalar creating alpha_u_2 at {1}
+
+new alpha_v: scalar creating alpha_v_2 at {2}
+
+new Cr_u: bitstring creating Cr_u_2 at {3}
+
+new Cr_v: bitstring creating Cr_v_2 at {4}
+
+out(h_ch, ~M) with ~M = hexp(D,alpha_u_2) at {7}
+
+out(h_ch, ~M_1) with ~M_1 = hexp(D,alpha_v_2) at {8}
+
+out(h_ch, ~M_2) with ~M_2 = Cr_u_2 at {9}
+
+new omega_u: scalar creating omega_u_1 at {12}
+
+new omega_su: scalar creating omega_su_1 at {13}
+
+new N_u: bitstring creating N_u_2 at {14}
+
+out(leak_eph, ~M_3) with ~M_3 = omega_u_1 at {15}
+
+out(leak_eph, ~M_4) with ~M_4 = omega_su_1 at {16}
+
+out(leak_eph, ~M_5) with ~M_5 = N_u_2 at {17}
+
+out(h_ch, (~M_6,~M_7,~M_8,~M_9)) with ~M_6 = penc(hexp(D,alpha_v_2),(IDu,N_u_2,Cr_u_2)), ~M_7 = hexp(D,omega_u_1), ~M_8 = hexp(D,sadd(omega_u_1,omega_su_1)), ~M_9 = hexp(D,alpha_u_2) at {20}
+
+in(h_ch, (penc(~M_1,(a,a_1,a_2)),D,a_3,a_4)) with penc(~M_1,(a,a_1,a_2)) = penc(hexp(D,alpha_v_2),(a,a_1,a_2)) at {23}
+
+new omega_v: scalar creating omega_v_1 at {25}
+
+new omega_sv: scalar creating omega_sv_1 at {26}
+
+new N_v: bitstring creating N_v_1 at {27}
+
+out(h_ch, (~M_10,~M_11,~M_12,~M_13)) with ~M_10 = penc(hexp(D,alpha_u_2),((N_v_1,IDv),Cr_v_2)), ~M_11 = hexp(D,omega_v_1), ~M_12 = hexp(D,sadd(omega_v_1,omega_sv_1)), ~M_13 = hexp(D,alpha_v_2) at {34}
+
+out(h_ch, ~M_14) with ~M_14 = hoplus(secret_sk,hf((a_2,a_1,e2b(hexp(D,omega_v_1)),e2b(hexp(a_4,alpha_v_2)),N_v_1,Cr_v_2))) at {35}
+
+out(h_ch, ~M_15) with ~M_15 = hoplus(lam_probe,e2b(hexp(D,omega_v_1))) at {36}
+
+out(h_ch, ~M_16) with ~M_16 = hoplus(mu_probe,e2b(hexp(a_4,alpha_v_2))) at {37}
+
+The attacker has the message hoplus(~M_15,e2b(~M_11)) = lam_probe in phase 1.
+A trace has been found.
+RESULT not attacker_p1(lam_probe[]) is false.
+-- Query not attacker_p1(mu_probe[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+200 rules inserted. Base: 174 rules (101 with conclusion selected). Queue: 82 rules.
+400 rules inserted. Base: 323 rules (106 with conclusion selected). Queue: 124 rules.
+600 rules inserted. Base: 517 rules (106 with conclusion selected). Queue: 143 rules.
+800 rules inserted. Base: 717 rules (106 with conclusion selected). Queue: 16 rules.
+Starting query not attacker_p1(mu_probe[])
+goal reachable: attacker_p1(mu_probe[])
+
+Derivation:
+
+1. The message hexp(D,alpha_v[]) may be sent to the attacker at output {8}.
+attacker(hexp(D,alpha_v[])).
+
+2. By 1, the attacker may know hexp(D,alpha_v[]).
+Using the function e2b the attacker may obtain e2b(hexp(D,alpha_v[])).
+attacker(e2b(hexp(D,alpha_v[]))).
+
+3. Using the function D the attacker may obtain D.
+attacker(D).
+
+4. The attacker has some term Omr_u_2.
+attacker(Omr_u_2).
+
+5. The attacker has some term Om_u_2.
+attacker(Om_u_2).
+
+6. The attacker has some term xCr_u_1.
+attacker(xCr_u_1).
+
+7. The attacker has some term N_u_2.
+attacker(N_u_2).
+
+8. The attacker has some term xIDu_1.
+attacker(xIDu_1).
+
+9. By 8, the attacker may know xIDu_1.
+By 7, the attacker may know N_u_2.
+By 6, the attacker may know xCr_u_1.
+Using the function 3-tuple the attacker may obtain (xIDu_1,N_u_2,xCr_u_1).
+attacker((xIDu_1,N_u_2,xCr_u_1)).
+
+10. By 1, the attacker may know hexp(D,alpha_v[]).
+By 9, the attacker may know (xIDu_1,N_u_2,xCr_u_1).
+Using the function penc the attacker may obtain penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)).
+attacker(penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1))).
+
+11. By 10, the attacker may know penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)).
+By 5, the attacker may know Om_u_2.
+By 4, the attacker may know Omr_u_2.
+By 3, the attacker may know D.
+Using the function 4-tuple the attacker may obtain (penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)),Om_u_2,Omr_u_2,D).
+attacker((penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)),Om_u_2,Omr_u_2,D)).
+
+12. The message (penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)),Om_u_2,Omr_u_2,D) that the attacker may have by 11 may be received at input {23}.
+So the message hoplus(mu_probe[],e2b(hexp(D,alpha_v[]))) may be sent to the attacker at output {37}.
+attacker(hoplus(mu_probe[],e2b(hexp(D,alpha_v[])))).
+
+13. By 12, the attacker may know hoplus(mu_probe[],e2b(hexp(D,alpha_v[]))).
+By 2, the attacker may know e2b(hexp(D,alpha_v[])).
+Using the function hoplus the attacker may obtain mu_probe[].
+attacker(mu_probe[]).
+
+14. By 13, the attacker may know mu_probe[].
+So the attacker may know mu_probe[] in phase 1.
+attacker_p1(mu_probe[]).
+
+15. By 14, attacker_p1(mu_probe[]).
+The goal is reached, represented in the following fact:
+attacker_p1(mu_probe[]).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new alpha_u: scalar creating alpha_u_2 at {1}
+
+new alpha_v: scalar creating alpha_v_2 at {2}
+
+new Cr_u: bitstring creating Cr_u_2 at {3}
+
+new Cr_v: bitstring creating Cr_v_2 at {4}
+
+out(h_ch, ~M) with ~M = hexp(D,alpha_u_2) at {7}
+
+out(h_ch, ~M_1) with ~M_1 = hexp(D,alpha_v_2) at {8}
+
+out(h_ch, ~M_2) with ~M_2 = Cr_u_2 at {9}
+
+new omega_u: scalar creating omega_u_1 at {12}
+
+new omega_su: scalar creating omega_su_1 at {13}
+
+new N_u: bitstring creating N_u_2 at {14}
+
+out(leak_eph, ~M_3) with ~M_3 = omega_u_1 at {15}
+
+out(leak_eph, ~M_4) with ~M_4 = omega_su_1 at {16}
+
+out(leak_eph, ~M_5) with ~M_5 = N_u_2 at {17}
+
+out(h_ch, (~M_6,~M_7,~M_8,~M_9)) with ~M_6 = penc(hexp(D,alpha_v_2),(IDu,N_u_2,Cr_u_2)), ~M_7 = hexp(D,omega_u_1), ~M_8 = hexp(D,sadd(omega_u_1,omega_su_1)), ~M_9 = hexp(D,alpha_u_2) at {20}
+
+in(h_ch, (penc(~M_1,(a,a_1,a_2)),a_3,a_4,D)) with penc(~M_1,(a,a_1,a_2)) = penc(hexp(D,alpha_v_2),(a,a_1,a_2)) at {23}
+
+new omega_v: scalar creating omega_v_1 at {25}
+
+new omega_sv: scalar creating omega_sv_1 at {26}
+
+new N_v: bitstring creating N_v_1 at {27}
+
+out(h_ch, (~M_10,~M_11,~M_12,~M_13)) with ~M_10 = penc(hexp(D,alpha_u_2),((N_v_1,IDv),Cr_v_2)), ~M_11 = hexp(D,omega_v_1), ~M_12 = hexp(D,sadd(omega_v_1,omega_sv_1)), ~M_13 = hexp(D,alpha_v_2) at {34}
+
+out(h_ch, ~M_14) with ~M_14 = hoplus(secret_sk,hf((a_2,a_1,e2b(hexp(a_3,omega_v_1)),e2b(hexp(D,alpha_v_2)),N_v_1,Cr_v_2))) at {35}
+
+out(h_ch, ~M_15) with ~M_15 = hoplus(lam_probe,e2b(hexp(a_3,omega_v_1))) at {36}
+
+out(h_ch, ~M_16) with ~M_16 = hoplus(mu_probe,e2b(hexp(D,alpha_v_2))) at {37}
+
+The attacker has the message hoplus(~M_16,e2b(~M_1)) = mu_probe in phase 1.
+A trace has been found.
+RESULT not attacker_p1(mu_probe[]) is false.
+
+--------------------------------------------------------------
+Verification summary:
+
+Query not attacker_p1(secret_sk[]) is true.
+
+Query not attacker_p1(lam_probe[]) is false.
+
+Query not attacker_p1(mu_probe[]) is false.
+
+--------------------------------------------------------------
+
+                                                                                   
+┌──(vinod㉿vinod)-[~/myResearchPapers/Huang/new-pv-files]
+└─$ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+┌──(vinod㉿vinod)-[~/myResearchPapers/Huang/new-pv-files]
+└─$ proverif H4-eck-R2-corrected.pv 
+Linear part:
+hexp(hexp(D,x),y) = hexp(hexp(D,y),x)
+Completing equations...
+Completed equations:
+hexp(hexp(D,x),y) = hexp(hexp(D,y),x)
+Convergent part:
+hoplus(hoplus(a,b),b) = a
+Completing equations...
+Completed equations:
+hoplus(hoplus(a,b),b) = a
+Process 0 (that is, the initial process):
+{1}new alpha_u: scalar;
+{2}new alpha_v: scalar;
+{3}new Cr_u: bitstring;
+{4}new Cr_v: bitstring;
+{5}let A_u: elem = hexp(D,alpha_u) in
+{6}let A_v: elem = hexp(D,alpha_v) in
+{7}out(h_ch, A_u);
+{8}out(h_ch, A_v);
+{9}out(h_ch, Cr_u);
+(
+    {10}let alpha_u_1: scalar = alpha_u in
+    {11}let Cr_u_1: bitstring = Cr_u in
+    {12}new omega_u: scalar;
+    {13}new omega_su: scalar;
+    {14}new N_u: bitstring;
+    {15}out(leak_eph, omega_u);
+    {16}out(leak_eph, omega_su);
+    {17}out(leak_eph, N_u);
+    {18}let Om_u: elem = hexp(D,omega_u) in
+    {19}let Omr_u: elem = hexp(D,sadd(omega_u,omega_su)) in
+    {20}out(h_ch, (penc(A_v,(IDu,N_u,Cr_u_1)),Om_u,Omr_u,A_u))
+) | (
+    {21}let alpha_v_1: scalar = alpha_v in
+    {22}let Cr_v_1: bitstring = Cr_v in
+    {23}in(h_ch, (ct1: bitstring,Om_u_1: elem,Omr_u_1: elem,xA_u: elem));
+    {24}let (xIDu: bitstring,N_u_1: bitstring,xCr_u: bitstring) = pdec(alpha_v_1,ct1) in
+    {25}new omega_v: scalar;
+    {26}new omega_sv: scalar;
+    {27}new N_v: bitstring;
+    {28}let Om_v: elem = hexp(D,omega_v) in
+    {29}let Omr_v: elem = hexp(D,sadd(omega_v,omega_sv)) in
+    {30}let lam: elem = hexp(Om_u_1,sadd(omega_v,omega_sv)) in
+    {31}let mu: elem = hexp(xA_u,alpha_v_1) in
+    {32}let SK: bitstring = hf((xCr_u,N_u_1,e2b(lam),e2b(mu),N_v,Cr_v_1)) in
+    {33}let none_v: bitstring = (N_v,IDv) in
+    {34}out(h_ch, (penc(A_u,(none_v,Cr_v_1)),Omr_v,A_v));
+    {35}out(h_ch, hoplus(secret_sk,SK));
+    {36}out(h_ch, hoplus(lam_probe,e2b(lam)));
+    {37}out(h_ch, hoplus(mu_probe,e2b(mu)))
+) | (
+    {38}phase 1;
+    {39}out(leak_lt, alpha_v);
+    {40}out(h_ch, alpha_v);
+    {41}out(h_ch, Cr_v)
+)
+
+--  Process 1 (that is, process 0, with let moved downwards):
+{1}new alpha_u: scalar;
+{2}new alpha_v: scalar;
+{3}new Cr_u: bitstring;
+{4}new Cr_v: bitstring;
+{5}let A_u: elem = hexp(D,alpha_u) in
+{7}out(h_ch, A_u);
+{6}let A_v: elem = hexp(D,alpha_v) in
+{8}out(h_ch, A_v);
+{9}out(h_ch, Cr_u);
+(
+    {12}new omega_u: scalar;
+    {13}new omega_su: scalar;
+    {14}new N_u: bitstring;
+    {15}out(leak_eph, omega_u);
+    {16}out(leak_eph, omega_su);
+    {17}out(leak_eph, N_u);
+    {19}let Omr_u: elem = hexp(D,sadd(omega_u,omega_su)) in
+    {18}let Om_u: elem = hexp(D,omega_u) in
+    {11}let Cr_u_1: bitstring = Cr_u in
+    {20}out(h_ch, (penc(A_v,(IDu,N_u,Cr_u_1)),Om_u,Omr_u,A_u))
+) | (
+    {23}in(h_ch, (ct1: bitstring,Om_u_1: elem,Omr_u_1: elem,xA_u: elem));
+    {21}let alpha_v_1: scalar = alpha_v in
+    {24}let (xIDu: bitstring,N_u_1: bitstring,xCr_u: bitstring) = pdec(alpha_v_1,ct1) in
+    {25}new omega_v: scalar;
+    {26}new omega_sv: scalar;
+    {27}new N_v: bitstring;
+    {33}let none_v: bitstring = (N_v,IDv) in
+    {29}let Omr_v: elem = hexp(D,sadd(omega_v,omega_sv)) in
+    {22}let Cr_v_1: bitstring = Cr_v in
+    {34}out(h_ch, (penc(A_u,(none_v,Cr_v_1)),Omr_v,A_v));
+    {31}let mu: elem = hexp(xA_u,alpha_v_1) in
+    {30}let lam: elem = hexp(Om_u_1,sadd(omega_v,omega_sv)) in
+    {32}let SK: bitstring = hf((xCr_u,N_u_1,e2b(lam),e2b(mu),N_v,Cr_v_1)) in
+    {35}out(h_ch, hoplus(secret_sk,SK));
+    {36}out(h_ch, hoplus(lam_probe,e2b(lam)));
+    {37}out(h_ch, hoplus(mu_probe,e2b(mu)))
+) | (
+    {38}phase 1;
+    {39}out(leak_lt, alpha_v);
+    {40}out(h_ch, alpha_v);
+    {41}out(h_ch, Cr_v)
+)
+
+-- Query not attacker_p1(secret_sk[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+200 rules inserted. Base: 176 rules (89 with conclusion selected). Queue: 69 rules.
+400 rules inserted. Base: 331 rules (91 with conclusion selected). Queue: 118 rules.
+600 rules inserted. Base: 525 rules (91 with conclusion selected). Queue: 80 rules.
+Starting query not attacker_p1(secret_sk[])
+RESULT not attacker_p1(secret_sk[]) is true.
+-- Query not attacker_p1(lam_probe[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+200 rules inserted. Base: 176 rules (89 with conclusion selected). Queue: 69 rules.
+400 rules inserted. Base: 331 rules (91 with conclusion selected). Queue: 118 rules.
+600 rules inserted. Base: 525 rules (91 with conclusion selected). Queue: 80 rules.
+Starting query not attacker_p1(lam_probe[])
+goal reachable: attacker_p1(lam_probe[])
+
+Derivation:
+Abbreviations:
+omega_v_1 = omega_v[xA_u = xA_u_1,Omr_u_1 = Omr_u_2,Om_u_1 = D,ct1 = penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1))]
+omega_sv_1 = omega_sv[xA_u = xA_u_1,Omr_u_1 = Omr_u_2,Om_u_1 = D,ct1 = penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1))]
+N_v_1 = N_v[xA_u = xA_u_1,Omr_u_1 = Omr_u_2,Om_u_1 = D,ct1 = penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1))]
+
+1. The attacker has some term xA_u_1.
+attacker(xA_u_1).
+
+2. The attacker has some term Omr_u_2.
+attacker(Omr_u_2).
+
+3. Using the function D the attacker may obtain D.
+attacker(D).
+
+4. The attacker has some term xCr_u_1.
+attacker(xCr_u_1).
+
+5. The attacker has some term N_u_2.
+attacker(N_u_2).
+
+6. The attacker has some term xIDu_1.
+attacker(xIDu_1).
+
+7. By 6, the attacker may know xIDu_1.
+By 5, the attacker may know N_u_2.
+By 4, the attacker may know xCr_u_1.
+Using the function 3-tuple the attacker may obtain (xIDu_1,N_u_2,xCr_u_1).
+attacker((xIDu_1,N_u_2,xCr_u_1)).
+
+8. The message hexp(D,alpha_v[]) may be sent to the attacker at output {8}.
+attacker(hexp(D,alpha_v[])).
+
+9. By 8, the attacker may know hexp(D,alpha_v[]).
+By 7, the attacker may know (xIDu_1,N_u_2,xCr_u_1).
+Using the function penc the attacker may obtain penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)).
+attacker(penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1))).
+
+10. By 9, the attacker may know penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)).
+By 3, the attacker may know D.
+By 2, the attacker may know Omr_u_2.
+By 1, the attacker may know xA_u_1.
+Using the function 4-tuple the attacker may obtain (penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)),D,Omr_u_2,xA_u_1).
+attacker((penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)),D,Omr_u_2,xA_u_1)).
+
+11. The message (penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)),D,Omr_u_2,xA_u_1) that the attacker may have by 10 may be received at input {23}.
+So the message (penc(hexp(D,alpha_u[]),((N_v_1,IDv[]),Cr_v[])),hexp(D,sadd(omega_v_1,omega_sv_1)),hexp(D,alpha_v[])) may be sent to the attacker at output {34}.
+attacker((penc(hexp(D,alpha_u[]),((N_v_1,IDv[]),Cr_v[])),hexp(D,sadd(omega_v_1,omega_sv_1)),hexp(D,alpha_v[]))).
+
+12. By 11, the attacker may know (penc(hexp(D,alpha_u[]),((N_v_1,IDv[]),Cr_v[])),hexp(D,sadd(omega_v_1,omega_sv_1)),hexp(D,alpha_v[])).
+Using the function 2-proj-3-tuple the attacker may obtain hexp(D,sadd(omega_v_1,omega_sv_1)).
+attacker(hexp(D,sadd(omega_v_1,omega_sv_1))).
+
+13. By 12, the attacker may know hexp(D,sadd(omega_v_1,omega_sv_1)).
+Using the function e2b the attacker may obtain e2b(hexp(D,sadd(omega_v_1,omega_sv_1))).
+attacker(e2b(hexp(D,sadd(omega_v_1,omega_sv_1)))).
+
+14. The message (penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)),D,Omr_u_2,xA_u_1) that the attacker may have by 10 may be received at input {23}.
+So the message hoplus(lam_probe[],e2b(hexp(D,sadd(omega_v_1,omega_sv_1)))) may be sent to the attacker at output {36}.
+attacker(hoplus(lam_probe[],e2b(hexp(D,sadd(omega_v_1,omega_sv_1))))).
+
+15. By 14, the attacker may know hoplus(lam_probe[],e2b(hexp(D,sadd(omega_v_1,omega_sv_1)))).
+By 13, the attacker may know e2b(hexp(D,sadd(omega_v_1,omega_sv_1))).
+Using the function hoplus the attacker may obtain lam_probe[].
+attacker(lam_probe[]).
+
+16. By 15, the attacker may know lam_probe[].
+So the attacker may know lam_probe[] in phase 1.
+attacker_p1(lam_probe[]).
+
+17. By 16, attacker_p1(lam_probe[]).
+The goal is reached, represented in the following fact:
+attacker_p1(lam_probe[]).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new alpha_u: scalar creating alpha_u_2 at {1}
+
+new alpha_v: scalar creating alpha_v_2 at {2}
+
+new Cr_u: bitstring creating Cr_u_2 at {3}
+
+new Cr_v: bitstring creating Cr_v_2 at {4}
+
+out(h_ch, ~M) with ~M = hexp(D,alpha_u_2) at {7}
+
+out(h_ch, ~M_1) with ~M_1 = hexp(D,alpha_v_2) at {8}
+
+out(h_ch, ~M_2) with ~M_2 = Cr_u_2 at {9}
+
+new omega_u: scalar creating omega_u_1 at {12}
+
+new omega_su: scalar creating omega_su_1 at {13}
+
+new N_u: bitstring creating N_u_2 at {14}
+
+out(leak_eph, ~M_3) with ~M_3 = omega_u_1 at {15}
+
+out(leak_eph, ~M_4) with ~M_4 = omega_su_1 at {16}
+
+out(leak_eph, ~M_5) with ~M_5 = N_u_2 at {17}
+
+out(h_ch, (~M_6,~M_7,~M_8,~M_9)) with ~M_6 = penc(hexp(D,alpha_v_2),(IDu,N_u_2,Cr_u_2)), ~M_7 = hexp(D,omega_u_1), ~M_8 = hexp(D,sadd(omega_u_1,omega_su_1)), ~M_9 = hexp(D,alpha_u_2) at {20}
+
+in(h_ch, (penc(~M_1,(a,a_1,a_2)),D,a_3,a_4)) with penc(~M_1,(a,a_1,a_2)) = penc(hexp(D,alpha_v_2),(a,a_1,a_2)) at {23}
+
+new omega_v: scalar creating omega_v_1 at {25}
+
+new omega_sv: scalar creating omega_sv_1 at {26}
+
+new N_v: bitstring creating N_v_1 at {27}
+
+out(h_ch, (~M_10,~M_11,~M_12)) with ~M_10 = penc(hexp(D,alpha_u_2),((N_v_1,IDv),Cr_v_2)), ~M_11 = hexp(D,sadd(omega_v_1,omega_sv_1)), ~M_12 = hexp(D,alpha_v_2) at {34}
+
+out(h_ch, ~M_13) with ~M_13 = hoplus(secret_sk,hf((a_2,a_1,e2b(hexp(D,sadd(omega_v_1,omega_sv_1))),e2b(hexp(a_4,alpha_v_2)),N_v_1,Cr_v_2))) at {35}
+
+out(h_ch, ~M_14) with ~M_14 = hoplus(lam_probe,e2b(hexp(D,sadd(omega_v_1,omega_sv_1)))) at {36}
+
+out(h_ch, ~M_15) with ~M_15 = hoplus(mu_probe,e2b(hexp(a_4,alpha_v_2))) at {37}
+
+The attacker has the message hoplus(~M_14,e2b(~M_11)) = lam_probe in phase 1.
+A trace has been found.
+RESULT not attacker_p1(lam_probe[]) is false.
+-- Query not attacker_p1(mu_probe[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+200 rules inserted. Base: 176 rules (89 with conclusion selected). Queue: 69 rules.
+400 rules inserted. Base: 331 rules (91 with conclusion selected). Queue: 118 rules.
+600 rules inserted. Base: 525 rules (91 with conclusion selected). Queue: 80 rules.
+Starting query not attacker_p1(mu_probe[])
+goal reachable: attacker_p1(mu_probe[])
+
+Derivation:
+
+1. The message hexp(D,alpha_v[]) may be sent to the attacker at output {8}.
+attacker(hexp(D,alpha_v[])).
+
+2. By 1, the attacker may know hexp(D,alpha_v[]).
+Using the function e2b the attacker may obtain e2b(hexp(D,alpha_v[])).
+attacker(e2b(hexp(D,alpha_v[]))).
+
+3. Using the function D the attacker may obtain D.
+attacker(D).
+
+4. The attacker has some term Omr_u_2.
+attacker(Omr_u_2).
+
+5. The attacker has some term Om_u_2.
+attacker(Om_u_2).
+
+6. The attacker has some term xCr_u_1.
+attacker(xCr_u_1).
+
+7. The attacker has some term N_u_2.
+attacker(N_u_2).
+
+8. The attacker has some term xIDu_1.
+attacker(xIDu_1).
+
+9. By 8, the attacker may know xIDu_1.
+By 7, the attacker may know N_u_2.
+By 6, the attacker may know xCr_u_1.
+Using the function 3-tuple the attacker may obtain (xIDu_1,N_u_2,xCr_u_1).
+attacker((xIDu_1,N_u_2,xCr_u_1)).
+
+10. By 1, the attacker may know hexp(D,alpha_v[]).
+By 9, the attacker may know (xIDu_1,N_u_2,xCr_u_1).
+Using the function penc the attacker may obtain penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)).
+attacker(penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1))).
+
+11. By 10, the attacker may know penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)).
+By 5, the attacker may know Om_u_2.
+By 4, the attacker may know Omr_u_2.
+By 3, the attacker may know D.
+Using the function 4-tuple the attacker may obtain (penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)),Om_u_2,Omr_u_2,D).
+attacker((penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)),Om_u_2,Omr_u_2,D)).
+
+12. The message (penc(hexp(D,alpha_v[]),(xIDu_1,N_u_2,xCr_u_1)),Om_u_2,Omr_u_2,D) that the attacker may have by 11 may be received at input {23}.
+So the message hoplus(mu_probe[],e2b(hexp(D,alpha_v[]))) may be sent to the attacker at output {37}.
+attacker(hoplus(mu_probe[],e2b(hexp(D,alpha_v[])))).
+
+13. By 12, the attacker may know hoplus(mu_probe[],e2b(hexp(D,alpha_v[]))).
+By 2, the attacker may know e2b(hexp(D,alpha_v[])).
+Using the function hoplus the attacker may obtain mu_probe[].
+attacker(mu_probe[]).
+
+14. By 13, the attacker may know mu_probe[].
+So the attacker may know mu_probe[] in phase 1.
+attacker_p1(mu_probe[]).
+
+15. By 14, attacker_p1(mu_probe[]).
+The goal is reached, represented in the following fact:
+attacker_p1(mu_probe[]).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new alpha_u: scalar creating alpha_u_2 at {1}
+
+new alpha_v: scalar creating alpha_v_2 at {2}
+
+new Cr_u: bitstring creating Cr_u_2 at {3}
+
+new Cr_v: bitstring creating Cr_v_2 at {4}
+
+out(h_ch, ~M) with ~M = hexp(D,alpha_u_2) at {7}
+
+out(h_ch, ~M_1) with ~M_1 = hexp(D,alpha_v_2) at {8}
+
+out(h_ch, ~M_2) with ~M_2 = Cr_u_2 at {9}
+
+new omega_u: scalar creating omega_u_1 at {12}
+
+new omega_su: scalar creating omega_su_1 at {13}
+
+new N_u: bitstring creating N_u_2 at {14}
+
+out(leak_eph, ~M_3) with ~M_3 = omega_u_1 at {15}
+
+out(leak_eph, ~M_4) with ~M_4 = omega_su_1 at {16}
+
+out(leak_eph, ~M_5) with ~M_5 = N_u_2 at {17}
+
+out(h_ch, (~M_6,~M_7,~M_8,~M_9)) with ~M_6 = penc(hexp(D,alpha_v_2),(IDu,N_u_2,Cr_u_2)), ~M_7 = hexp(D,omega_u_1), ~M_8 = hexp(D,sadd(omega_u_1,omega_su_1)), ~M_9 = hexp(D,alpha_u_2) at {20}
+
+in(h_ch, (penc(~M_1,(a,a_1,a_2)),a_3,a_4,D)) with penc(~M_1,(a,a_1,a_2)) = penc(hexp(D,alpha_v_2),(a,a_1,a_2)) at {23}
+
+new omega_v: scalar creating omega_v_1 at {25}
+
+new omega_sv: scalar creating omega_sv_1 at {26}
+
+new N_v: bitstring creating N_v_1 at {27}
+
+out(h_ch, (~M_10,~M_11,~M_12)) with ~M_10 = penc(hexp(D,alpha_u_2),((N_v_1,IDv),Cr_v_2)), ~M_11 = hexp(D,sadd(omega_v_1,omega_sv_1)), ~M_12 = hexp(D,alpha_v_2) at {34}
+
+out(h_ch, ~M_13) with ~M_13 = hoplus(secret_sk,hf((a_2,a_1,e2b(hexp(a_3,sadd(omega_v_1,omega_sv_1))),e2b(hexp(D,alpha_v_2)),N_v_1,Cr_v_2))) at {35}
+
+out(h_ch, ~M_14) with ~M_14 = hoplus(lam_probe,e2b(hexp(a_3,sadd(omega_v_1,omega_sv_1)))) at {36}
+
+out(h_ch, ~M_15) with ~M_15 = hoplus(mu_probe,e2b(hexp(D,alpha_v_2))) at {37}
+
+The attacker has the message hoplus(~M_15,e2b(~M_1)) = mu_probe in phase 1.
+A trace has been found.
+RESULT not attacker_p1(mu_probe[]) is false.
+
+--------------------------------------------------------------
+Verification summary:
+
+Query not attacker_p1(secret_sk[]) is true.
+
+Query not attacker_p1(lam_probe[]) is false.
+
+Query not attacker_p1(mu_probe[]) is false.
+
+--------------------------------------------------------------
+
+                                                                                   
+┌──(vinod㉿vinod)-[~/myResearchPapers/Huang/new-pv-files]
+
+
+
+
+
+
+
+
+
+

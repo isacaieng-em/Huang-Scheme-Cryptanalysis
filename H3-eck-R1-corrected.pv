@@ -1,0 +1,105 @@
+(* =======================================================================
+   Huang et al. -- eCK mixed reveal, repair R1  (CORRECTED ENCODING)
+   -----------------------------------------------------------------------
+   Correction vs. the earlier model: Psi_2 is now wrapped in the OUTER
+   public-key envelope Enc_{A_u}(...) exactly as the published scheme
+   specifies.  The earlier encoding omitted it, which made the responder's
+   nonce N_v reachable and produced a spurious key-recovery verdict.
+
+   Reveals (eCK case E3, distinct parties, test session fresh):
+     EphemeralKeyReveal(u)  -> omega_u, omega*_u, N_u      (phase 0)
+     Corrupt(v)             -> alpha_v, Cr_v               (phase 1)
+
+   Queries and EXPECTED verdicts:
+     attacker_p1(lam)       is false   (adversary DOES get lambda_uv)
+     attacker_p1(mu)        is false   (adversary DOES get mu_uv)
+     attacker_p1(secret_sk) is TRUE    (the session key is NOT recovered)
+   ======================================================================= *)
+
+free h_ch    : channel.
+free leak_eph: channel.
+free leak_lt : channel.
+
+type scalar.
+type elem.
+const D: elem.
+
+fun hexp(elem, scalar): elem.
+equation forall x: scalar, y: scalar;
+  hexp(hexp(D,x),y) = hexp(hexp(D,y),x).
+
+(* scalar addition is a FREE symbol: omega + omega* is not omega *)
+fun sadd(scalar, scalar): scalar.
+
+(* public-key encryption: decrypts with the matching secret scalar *)
+fun penc(elem, bitstring): bitstring.
+reduc forall s: scalar, m: bitstring; pdec(s, penc(hexp(D,s), m)) = m.
+
+fun hf(bitstring): bitstring.
+fun e2b(elem): bitstring.
+fun s2b(scalar): bitstring.
+
+fun hoplus(bitstring, bitstring): bitstring.
+equation forall a: bitstring, b: bitstring; hoplus(hoplus(a,b),b) = a.
+
+free secret_sk: bitstring [private].
+free lam_probe: bitstring [private].
+free mu_probe : bitstring [private].
+query attacker(secret_sk).
+query attacker(lam_probe).
+query attacker(mu_probe).
+
+free IDu: bitstring.
+free IDv: bitstring.
+
+let procU(alpha_u: scalar, A_u: elem, A_v: elem, Cr_u: bitstring) =
+    new omega_u : scalar;
+    new omega_su: scalar;          (* omega*_u *)
+    new N_u     : bitstring;
+    (* EphemeralKeyReveal(u): ALL of u's session randomness *)
+    out(leak_eph, omega_u); out(leak_eph, omega_su); out(leak_eph, N_u);
+    let Om_u  = hexp(D, omega_u) in
+    let Omr_u = hexp(D, sadd(omega_u, omega_su)) in
+    (* Psi_1 : outer envelope under A_v *)
+    out(h_ch, (penc(A_v, (IDu, N_u, Cr_u)), Om_u, Omr_u, A_u));
+    0.
+
+(* --- responder written out properly (Omega*_u comes from the wire) ------ *)
+let procV2(alpha_v: scalar, A_v: elem, A_u: elem, Cr_v: bitstring) =
+    in(h_ch, (ct1: bitstring, Om_u: elem, Omr_u: elem, xA_u: elem));
+    let (xIDu: bitstring, N_u: bitstring, xCr_u: bitstring) = pdec(alpha_v, ct1) in
+    new omega_v : scalar;
+    new omega_sv: scalar;
+    new N_v     : bitstring;
+    let Om_v  = hexp(D, omega_v) in
+    let Omr_v = hexp(D, sadd(omega_v, omega_sv)) in
+    let lam   = hexp(Om_u, omega_v) in
+    let mu    = hexp(xA_u, alpha_v) in
+    let SK    = hf((xCr_u, N_u, e2b(lam), e2b(mu), N_v, Cr_v)) in
+    (* inner: NONe_v under the ephemeral public key Omega*_u = Omr_u - Om_u.
+       Modelled as a public-key encryption whose secret is omega*_u, which the
+       adversary holds here -- so the INNER layer gives it nothing extra.     *)
+    let none_v = (N_v, IDv) in
+    (* REPAIR R1: Omega_v is additionally transmitted in the clear *)
+    out(h_ch, (penc(A_u, (none_v, Cr_v)), Om_v, Omr_v, A_v));
+    (* detectors *)
+    out(h_ch, hoplus(secret_sk, SK));
+    out(h_ch, hoplus(lam_probe, e2b(lam)));
+    out(h_ch, hoplus(mu_probe,  e2b(mu)));
+    0.
+
+process
+    new alpha_u: scalar;
+    new alpha_v: scalar;
+    new Cr_u   : bitstring;
+    new Cr_v   : bitstring;
+    let A_u = hexp(D, alpha_u) in
+    let A_v = hexp(D, alpha_v) in
+    out(h_ch, A_u); out(h_ch, A_v);
+    (* Cr_u is held by every peer u has ever contacted: conservative *)
+    out(h_ch, Cr_u);
+    (
+        procU(alpha_u, A_u, A_v, Cr_u)
+      | procV2(alpha_v, A_v, A_u, Cr_v)
+      | ( phase 1; out(leak_lt, alpha_v); out(h_ch, alpha_v); out(h_ch, Cr_v) )
+    )
